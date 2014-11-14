@@ -4,9 +4,10 @@ Using keystroke dynamics as biometric authentication, using fuzze extraction to 
 TODO
 ====
 
-Keystroke Validation 
-Figure out protocol
-Web Server
+Keystroke Validation \\
+Figure out protocol \\
+Hash timings to keys (http://www.cs.bu.edu/~reyzin/fuzzy.html)\\
+Web Server\\
 ZKP protocol
 
 
