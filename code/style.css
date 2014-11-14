@@ -1,0 +1,8 @@
+body {
+    font-family: helvetica;
+}
+
+td {
+    vertical-align: top;
+    padding-right: 15px;
+}
