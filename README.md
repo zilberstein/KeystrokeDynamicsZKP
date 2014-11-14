@@ -1,4 +1,4 @@
-Using keystroke dynamics as biometric authentication, then using Zero-Knowledge Proofs to authenticate password.
+Using keystroke dynamics as biometric authentication, using fuzze extraction to generate keys, then using Zero-Knowledge Proofs to authenticate password.
 
 ====
 TODO
