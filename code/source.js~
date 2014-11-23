@@ -1,12 +1,11 @@
 lastTime = 0;
+<<<<<<< HEAD
 sslow = -2;
 slow = -1;
 same = 0;
 fast = 1;
 ffast = 2;
 data = []
-trials = [{'word':'', 'strokes':[]}];
-tnum = 0;
 
 function asc2hex(pStr) {
         tempstr = '';
@@ -15,6 +14,10 @@ function asc2hex(pStr) {
         }
         return tempstr;
     }
+=======
+trials = [{'word':'', 'strokes':[]}];
+tnum = 0;
+>>>>>>> cc6bbc3181538f38a4916ec2f73a24135641c1e0
 
 function recordTime() {
     d = new Date();
