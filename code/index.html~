@@ -8,6 +8,11 @@
   <h1>Login:</h1>
   <input type="text" id="box">
   <button id="clear">Clear</button>
+  <table id="data">
+    <tr>
+      <td></td>
+    </tr>
+  </table>
   <table id="vect">
     <tr>
       <td></td>

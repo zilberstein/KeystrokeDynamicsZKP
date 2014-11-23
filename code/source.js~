@@ -33,7 +33,6 @@ $('#box').keyup(recordTime);
 
 $('#clear').click(function() {
     $('#data tr').append('<td></td>');
-    $('#vect tr').append('<td></td>');
     $('#box').val('');
     lastTime = 0;
     $('#box').focus();
