@@ -11,12 +11,12 @@ tnum = 0;
 baseURL = 'http://127.0.0.1:5000/';
 
 function asc2hex(pStr) {
-        tempstr = '';
-        for (a = 0; a < pStr.length; a = a + 1) {
-            tempstr = tempstr + pStr.charCodeAt(a).toString(16);
-        }
-        return tempstr;
+    tempstr = '';
+    for (a = 0; a < pStr.length; a = a + 1) {
+        tempstr = tempstr + pStr.charCodeAt(a).toString(16);
     }
+    return tempstr;
+}
 
 function recordTime(event) {
     d = new Date();
@@ -26,7 +26,6 @@ function recordTime(event) {
     }
     diff = t - lastTime
     trials[tnum].strokes.push(diff);
-    $('#data tr td').last().append(diff + '<br />');
     if (diff > 100.0){
         met = ffast;
     } else if (diff > 50){
@@ -39,7 +38,6 @@ function recordTime(event) {
         met = sslow;
     }
     data.push(met)
-    $('#vect tr td').last().append(met + '<br />');
     lastTime = t;
     if (event.which == 13) {
         // 'enter' was pressed
@@ -70,6 +68,7 @@ $('#username').keydown(function(event) {
         clearBox();
     }
 });
+
 $('#box').keydown(function(event) {
     recordTime();
     if (event.which == 13) {
