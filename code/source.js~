@@ -22,8 +22,9 @@ function recordTime() {
     if (lastTime === 0) {
         lastTime = t;
     }
-    trials[tnum].strokes.push(t - lastTime);
-    $('#data tr td').last().append(t - lastTime + '<br />');
+    diff = t - lastTime
+    trials[tnum].strokes.push(diff);
+    $('#data tr td').last().append(diff + '<br />');
     if (diff > 100.0){
         met = ffast;
     } else if (diff > 50){
