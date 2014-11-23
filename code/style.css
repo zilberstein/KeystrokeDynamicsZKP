@@ -6,3 +6,24 @@ td {
     vertical-align: top;
     padding-right: 15px;
 }
+
+#new_user {
+    display: none;
+}
+
+.frame {
+    width: 800px;
+    margin: 100px auto;
+    background-color: #eee;
+    padding:
+}
+
+input {
+    border:0;
+    font-size: 16pt;
+    background: transparent;
+}
+
+textarea:focus, input:focus{
+    outline: 0;
+}
