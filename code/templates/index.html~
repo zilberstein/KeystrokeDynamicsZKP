@@ -7,7 +7,7 @@
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
   <div class="frame" id="login">
     <h1>Login:</h1>
-    <p>To log in, simply type your name at your normal speed in the box below. You will be authenticated based on the timing of you keystrokes. Please don't type like a moron.</p>
+    <p>To log in, simply type your name in the box below. You will be authenticated based on the timing of you keystrokes</p>
     <input type="text" autofocus="autofocus" id="box" name="name" placeholder="Log in...">
     <p>new user? <span class="btn" id="make_account">make an account</span></p>
   </div>
