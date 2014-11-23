@@ -100,7 +100,7 @@ $('#box').keydown(function(event) {
                 window.location.href = d}
             });
         //ajax breaks everything, cant be redirected or auth
-        //window.location.href = (httpGet(baseURL + 'login/' + calcVector(name)))
+        window.location.href = (httpGet(baseURL + 'login/' + calcVector(name)))
         clearBox($('#box'));
     }
 });
