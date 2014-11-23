@@ -42,6 +42,7 @@ function recordTime(event) {
     $('#vect tr td').last().append(met + '<br />');
     lastTime = t;
     if (event.which == 13) {
+        // 'enter' was pressed
         $.ajax(baseURL + $('#box').val(), {success : sendPwd});
         clearBox();
     }
