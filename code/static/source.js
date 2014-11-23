@@ -4,9 +4,14 @@ slow = -1;
 same = 0;
 fast = 1;
 ffast = 2;
-data = [];
-trials = [{'word':'', 'strokes':[]}];
-tnum = 0;
+
+function init_data() {
+    data = [];
+    trials = [{'word':'', 'strokes':[]}];
+    tnum = 0;
+}
+
+init_data();
 
 baseURL = 'http://127.0.0.1:5000/';
 
@@ -39,11 +44,6 @@ function recordTime(event) {
     }
     data.push(met)
     lastTime = t;
-    if (event.which == 13) {
-        // 'enter' was pressed
-        $.ajax(baseURL + $('#box').val(), {success : sendPwd});
-        clearBox();
-    }
 }
 
 function sendPwd(data) {
@@ -64,8 +64,16 @@ $('#username').keydown(function(event) {
     recordTime();
     if (event.which == 13) {
         name = $('#username').val();
-        $.ajax(baseURL + 'login/' + calcVector(name), {success : sendPwd});
-        clearBox();
+        $.ajax({
+            type: 'POST',
+            url: baseURL + 'login/',
+            data : {
+                'name' : name,
+                'hash' : calcVector(name),
+            },
+            success : sendPwd
+        });
+        clearBox($('#username'));
     }
 });
 
@@ -74,19 +82,17 @@ $('#box').keydown(function(event) {
     if (event.which == 13) {
         name = $('#box').val();
         $.ajax(baseURL + 'login/' + calcVector(name), {success : sendPwd});
-        clearBox();
+        clearBox($('#box'));
     }
 });
 
 $('#clear').click(clearBox);
 
-function clearBox() {
-    $('#vect tr').append('<td></td>');
-    trials[tnum].word = $('#box').val();
-    $('#data tr').append('<td></td>');
-    $('#box').val('');
+function clearBox(box) {
+    trials[tnum].word = box.val();
+    box.val('');
     lastTime = 0;
-    $('#box').focus();
+    box.focus();
     trials.push({'word':'', 'strokes':[]});
     tnum++;
     data=[];
@@ -95,13 +101,11 @@ function clearBox() {
 $('#make_account').click(function() {
     $('#login').hide();
     $('#new_user').show();
-    data = [];
-    trials = [{'word':'', 'strokes':[]}];
+    init_data();
 });
 
 $('#log_in').click(function() {
     $('#new_user').hide();
     $('#login').show();
-    data = [];
-    trials = [{'word':'', 'strokes':[]}];
+    init_data();
 });
