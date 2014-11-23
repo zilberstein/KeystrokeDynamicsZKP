@@ -7,9 +7,12 @@
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
   <h1 id="getme"></h1>
   <h1>Login:</h1>
-  <input type="text" id="box">
+  <form> 
+      <input type="text" id="box" name="name">
+      <input type='button' id='submit' value='Submit' onclick='calcVector(this.form);return false;' />
+  </form>
   <button id="clear">Clear</button>
-  <table id="data">
+  <table id="vect">
     <tr>
       <td></td>
     </tr>

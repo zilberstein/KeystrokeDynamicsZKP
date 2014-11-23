@@ -8,8 +8,6 @@ data = [];
 trials = [{'word':'', 'strokes':[]}];
 tnum = 0;
 
-baseURL = 'http://127.0.0.1:5000/';
-
 function asc2hex(pStr) {
         tempstr = '';
         for (a = 0; a < pStr.length; a = a + 1) {
@@ -18,7 +16,7 @@ function asc2hex(pStr) {
         return tempstr;
     }
 
-function recordTime(event) {
+function recordTime() {
     d = new Date();
     t = d.getTime();
     if (lastTime === 0) {
@@ -41,14 +39,7 @@ function recordTime(event) {
     data.push(met)
     $('#vect tr td').last().append(met + '<br />');
     lastTime = t;
-    if (event.which == 13) {
-        $.ajax(baseURL + $('#box').val(), {success : sendPwd});
-        clearBox();
-    }
-}
 
-function sendPwd(data) {
-    alert(data);
 }
 
 function calcVector(form) {
@@ -64,9 +55,7 @@ function calcVector(form) {
 $('#box').keydown(recordTime);
 //$('#box').keyup(recordTime);
 
-$('#clear').click(clearBox);
-
-function clearBox() {
+$('#clear').click(function() {
     $('#vect tr').append('<td></td>');
     trials[tnum].word = $('#box').val();
     $('#data tr').append('<td></td>');
@@ -76,4 +65,4 @@ function clearBox() {
     trials.push({'word':'', 'strokes':[]});
     tnum++;
     data=[];
-}
+});
