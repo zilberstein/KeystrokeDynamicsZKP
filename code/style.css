@@ -1,5 +1,14 @@
 body {
-    font-family: helvetica;
+    font-family: helvetica neue;
+    background-color: #99b;
+}
+
+h1 {
+    font-weight: 200;
+}
+
+p {
+    color: #666;
 }
 
 td {
@@ -15,15 +24,23 @@ td {
     width: 800px;
     margin: 100px auto;
     background-color: #eee;
-    padding:
+    padding: 25px;
+    border-radius: 15px;
 }
 
 input {
     border:0;
     font-size: 16pt;
     background: transparent;
+    font-weight: 200;
+    font-family: helvetica neue;
 }
 
 textarea:focus, input:focus{
     outline: 0;
+}
+
+.btn {
+    text-decoration: underline;
+    cursor: pointer;
 }
