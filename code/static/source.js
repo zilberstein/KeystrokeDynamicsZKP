@@ -60,13 +60,16 @@ function calcVector(name) {
     return result;
 }
 
+//create user
 $('#username').keydown(function(event) {
     recordTime();
     if (event.which == 13) {
+        // enter button
         name = $('#username').val();
         $.ajax({
-            type: 'POST',
-            url: baseURL + 'login/',
+            type: "POST",
+            //url: baseURL + 'login/',
+            url: "{{url_for('/login')}}",
             data : {
                 'name' : name,
                 'hash' : calcVector(name),
@@ -77,11 +80,24 @@ $('#username').keydown(function(event) {
     }
 });
 
+function httpGet(theUrl)
+{
+    var xmlHttp = null;
+
+    xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", theUrl, false );
+    xmlHttp.send( null );
+    return xmlHttp.responseText;
+}
+
+// log in
 $('#box').keydown(function(event) {
     recordTime();
     if (event.which == 13) {
         name = $('#box').val();
-        $.ajax(baseURL + 'login/' + calcVector(name), {success : sendPwd});
+        //$.ajax(baseURL + 'login/' + calcVector(name), {success : sendPwd});
+        //ajax breaks everything, cant be redirected or auth
+        window.location.href = (httpGet(baseURL + 'login/' + calcVector(name)))
         clearBox($('#box'));
     }
 });

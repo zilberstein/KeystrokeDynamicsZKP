@@ -14,21 +14,22 @@ def index():
 def new_user(name, my_hash):
     return name + '/'   + my_hash
 
-@app.route("/login/<s>", methods=['GET'])
-def login(s):
+@app.route("/login", methods=['GET', 'POST'])
+def login():
     error = None
-    if request.method == 'GET':
-        return url_for('success')
+    if request.method == 'POST':
+        return redirect(url_for('/success'))
         if request.form['name'] != app.config['name']:
             error = 'Invalid username'
         else:
             session['logged_in'] = True
             flash('You were logged in')
-        return url_for('success')
-    return url_for('success')
+            return render_template('success.html')
+    #return render_template('success.html', error=error)
+    return redirect(url_for('/success'))
 
 @app.route("/success")
-def success():
+def whatever():
     return render_template('success.html')
 
 @app.route('/logout')
