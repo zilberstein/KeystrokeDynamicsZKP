@@ -7,23 +7,15 @@
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
   <div class="frame" id="login">
     <h1>Login:</h1>
-    <input type="text" id="box" name="name" placeholder="Type your name">
-    <p>new user? <a id="make_account">make an account</a></p>
-    <table id="vect">
-      <tr>
-        <td></td>
-      </tr>
-    </table>
+    <p>To log in, simply type your name in the box below. You will be authenticated based on the timing of you keystrokes</p>
+    <input type="text" autofocus="autofocus" id="box" name="name" placeholder="Log in...">
+    <p>new user? <span class="btn" id="make_account">make an account</span></p>
   </div>
   <div class="frame" id="new_user">
-    <h1>Type Your Name:</h1>
-    <input type="text" id="box" name="name">
-    <button id="clear">Clear</button>
-    <table id="vect">
-      <tr>
-        <td></td>
-      </tr>
-    </table>
+    <h1>Make an account:</h1>
+    <p>To make an account, repeatedly type your full name and then the enter key in the box below. Once we have enough training data to recognize your keystroke patterns, your account will be created.</p>
+    <input type="text" placeholder="Make an account..." id="username">
+    <p>Already have an account? <span class="btn" id="log_in">log in</span></p>
   </div>
 
 

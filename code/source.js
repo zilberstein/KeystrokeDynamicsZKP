@@ -41,28 +41,38 @@ function recordTime(event) {
     data.push(met)
     $('#vect tr td').last().append(met + '<br />');
     lastTime = t;
-    if (event.which == 13) {
-        $.ajax(baseURL + $('#box').val(), {success : sendPwd});
-        clearBox();
-    }
 }
 
 function sendPwd(data) {
     alert(data);
 }
 
-function calcVector(form) {
-    result = asc2hex(String(form.elements[0].value));
+function calcVector(name) {
+    result = asc2hex(String(name));
     console.log(data)
     for (var i in data){
         result += data[i];
     }
     data = [];
-    alert(result);
+    return result;
 }
 
-$('#box').keydown(recordTime);
-//$('#box').keyup(recordTime);
+$('#username').keydown(function(event) {
+    recordTime();
+    if (event.which == 13) {
+        name = $('#username').val();
+        $.ajax(baseURL + 'login/' + calcVector(name), {success : sendPwd});
+        clearBox();
+    }
+});
+$('#box').keydown(function(event) {
+    recordTime();
+    if (event.which == 13) {
+        name = $('#box').val();
+        $.ajax(baseURL + 'login/' + calcVector(name), {success : sendPwd});
+        clearBox();
+    }
+});
 
 $('#clear').click(clearBox);
 
@@ -77,3 +87,17 @@ function clearBox() {
     tnum++;
     data=[];
 }
+
+$('#make_account').click(function() {
+    $('#login').hide();
+    $('#new_user').show();
+    data = [];
+    trials = [{'word':'', 'strokes':[]}];
+});
+
+$('#log_in').click(function() {
+    $('#new_user').hide();
+    $('#login').show();
+    data = [];
+    trials = [{'word':'', 'strokes':[]}];
+});
