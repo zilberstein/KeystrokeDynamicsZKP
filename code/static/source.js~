@@ -68,7 +68,8 @@ $('#username').keydown(function(event) {
         name = $('#username').val();
         $.ajax({
             type: "POST",
-            url: baseURL + 'newuser/',
+            //url: baseURL + 'login/',
+            url: "{{url_for('/login')}}",
             data : {
                 'name' : name,
                 'hash' : calcVector(name),
@@ -99,7 +100,7 @@ $('#box').keydown(function(event) {
                 window.location.href = d}
             });
         //ajax breaks everything, cant be redirected or auth
-        //window.location.href = (httpGet(baseURL + 'login/' + calcVector(name)))
+        window.location.href = (httpGet(baseURL + 'login/' + calcVector(name)))
         clearBox($('#box'));
     }
 });
