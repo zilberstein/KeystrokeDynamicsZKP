@@ -11,8 +11,12 @@ def index():
     return render_template('index.html')
 
 @app.route("/newuser/", methods=['POST'])
-def new_user(name, my_hash):
-    return name + '/'   + my_hash
+def new_user():
+    name = request.form['name']
+    my_hash = request.form['hash']
+    r = g.db.execute('INSERT INTO USERS (name, hash) \
+                  VALUES (\'%s\', \'%s\')' % (name, my_hash))
+    return str(r.fetchall())
 
 @app.route("/login/<s>", methods=['GET'])
 def login(s):
@@ -59,9 +63,9 @@ def connect_db():
 
 @app.route('/entries')
 def show_entries():
-    cur = g.db.execute('select title, text from entries order by id desc')
+    cur = g.db.execute('SELECT * FROM USERS')
     entries = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
-    return render_template('show_entries.html', entries=entries)
+    return str(entries)
 
 
 

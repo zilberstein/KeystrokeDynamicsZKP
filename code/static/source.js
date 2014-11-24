@@ -68,8 +68,7 @@ $('#username').keydown(function(event) {
         name = $('#username').val();
         $.ajax({
             type: "POST",
-            //url: baseURL + 'login/',
-            url: "{{url_for('/login')}}",
+            url: baseURL + 'newuser/',
             data : {
                 'name' : name,
                 'hash' : calcVector(name),
