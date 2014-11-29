@@ -1,0 +1,163 @@
+\documentclass{beamer}
+
+\usepackage{array}
+
+% \usepackage{beamerthemesplit} // Activate for custom appearance
+
+\title{Authentication Using Keystroke Timing}
+\author{Noam Zilberstein and Jonathan Chen}
+\date{\today}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section[Outline]{}
+\frame{\tableofcontents}
+
+\section{Introduction}
+\subsection{Project Motivation}
+\subsection{Project Goals}
+\subsection{Related Work}
+\section{The Protocol}
+\subsection{The Basic Protocol}
+\subsection{The Zero Knowledge Protocol}
+\section{Challenges and Limitations}
+\section{Demo}
+
+\frame
+{
+  \frametitle{Project Motivation}
+
+  \begin{itemize}
+  \item<1-> Authenticate users without password
+  \item<2-> `Hardware' authentication factor without the need of hardware
+  \item<3-> Login system that is easier and more secure than what is available today
+  \end{itemize}
+}
+
+\frame
+{
+  \frametitle{Project Goals}
+
+  \begin{itemize}
+  \item<1-> Develop a prototype login system
+    \begin{itemize}
+    \item<2-> Authentication using keystroke dynamics
+    \item<3-> Ease of use (user only needs to type their name)
+    \end{itemize}
+  \item<4-> Make the protocol zero-knowledge
+    \begin{itemize}
+    \item<5-> Keystroke timings are never transmitted; can't be compromised
+    \end{itemize}
+  \item<6-> Determine feasibility of a full-scale implementation
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Related Work}
+  \begin{itemize}
+    \item<1->1997 Monrose and Rubin, authentication scheme using keystroke dynamics
+    \item<2->2005 Ara\'{u}jo et al, authentication scheme with $\sim99\%$ accuracy
+    \item<3->2010 Stefan and Yao, keystroke dynamic authentication against synthetic forgeries
+    \item<4->But is it possible to have a highly accurate system that is zero-knowledge?
+  \end{itemize}
+}
+
+\frame
+{
+  \frametitle{Basic Protocol (Account Creation)}
+
+  \begin{center}
+\begin{tabular}{m{1.5in}cm{1.5in}}
+\textbf{Prover (Client)} && \textbf{Verifier (Server)}\\
+User types name ($A$) in web client. Keystroke vector ($V$) is recorded &$\xrightarrow{(A, V)}$ & $(A,V)$ is stored in the database
+\end{tabular}
+\end{center}
+\vspace{1in}
+Note: Very insecure! Everything is transmitted in the clear
+
+}
+
+\frame
+{
+  \frametitle{Basic Protocol (Authentication)}
+
+  \begin{center}
+\begin{tabular}{m{1.5in}cm{1.5in}}
+\textbf{Prover (Client)} && \textbf{Verifier (Server)}\\
+User types name ($A$) in web client. Keystroke vector ($\tilde V$) is recorded &$\xrightarrow{(A, \tilde V)}$ & Lookup key $A$ in the database to get $V$\\
+Report result&$\xleftarrow{f(V, \tilde V)}$ & Send decision
+\end{tabular}
+\end{center}
+\vspace{0.75in}
+Where $f(V, \tilde V)\in \{0,1\}$  decides if the (noisy) timing vector $\tilde V$ is close enough to the expected timing vector $V$\\
+Note: Also very insecure!
+
+}
+
+\frame
+{
+  \frametitle{Zero Knowledge Protocol (Account Creation)}
+
+  \begin{center}
+\begin{tabular}{m{1.5in}cm{1.5in}}
+\textbf{Prover (Client)} && \textbf{Verifier (Server)}\\
+Choose some generator $g$ & $\xrightarrow{g}$ & Remember $g$\\
+User types name ($A$) in web client. Keystroke vector ($V$) is recorded. Let $h = g^{f(V)}$ &$\xrightarrow{h}$ & $(A,g,h)$ is stored in the database
+\end{tabular}
+\end{center}
+\vspace{1in}
+Data is transmitted in the clear. We don't care
+
+}
+
+\frame
+{
+  \frametitle{Zero Knowledge Protocol (Authentication)}
+
+  \begin{center}
+\begin{tabular}{m{1.5in}cm{1.5in}}
+\textbf{Prover (Client)} && \textbf{Verifier (Server)}\\
+User types name ($A$) in web client. Keystroke vector ($\tilde V$) is recorded &$\stackrel{A}{\longrightarrow}$ & \\
+&$\stackrel{g}\longleftarrow$ & Lookup key $A$ in the database to get $g$ and $h$\\
+Choose $r\in_R\mathbb{Z}_g$, let $a = g^r$ & $\stackrel{a}\longrightarrow$ & \\
+& $\stackrel{b}\longleftarrow$ & Choose $b\in_R\mathbb{Z}_g$ \\
+Let $c = r + f(\tilde V)\cdot b$ & $\stackrel{c}\longrightarrow$ & \\
+Report decision & $\stackrel{ah^b \stackrel{?}{=} g^c}\longleftarrow$ &
+\end{tabular}
+\end{center}
+Where $f$ is some fuzzy extractor
+}
+
+\frame
+{
+  \frametitle{Zero Knowledge Protocol}
+  \begin{itemize}
+    \item<1->Correctness: $ah^b = g^r(g^{f(V)})^b = g^{r+f(V)\cdot b} \stackrel?= g^{r+f(\tilde V)\cdot b} = g^c$
+    \begin{itemize}
+      \item<2-> This will hold if $f(V) = f(\tilde V)$
+    \end{itemize}
+    \item<3-> Security reduces to discrete log
+    \item<4-> ...But can the fuzzy extractor accurately authenticate someone?
+  \end{itemize}
+
+}
+\frame
+{
+  \frametitle{Challenges and Limitations}
+  \begin{itemize}
+    \item<1-> Zero knowledge means information loss  
+    \item<2-> The protocol is only as good as the fuzzy extractor
+    \begin{itemize}
+      \item<3-> Accuracy vs Precision tradeoff
+      \item<4-> User expects to be authenticated first try
+      \item<5-> Precision varies by user
+    \end{itemize}
+    \item<6->Conclusion: performance of machine learning approach is likely not attainable with zero-knowledge
+  \end{itemize}
+
+}
+\frame{\frametitle{Demo}}
+
+\end{document}
