@@ -28,13 +28,17 @@ def login(s):
     error = None
     if request.method == 'GET':
         return url_for('success')
-        if request.form['name'] != app.config['name']:
-            error = 'Invalid username'
-        else:
+    if check_match(request.form['name'], request.form['has']):
             session['logged_in'] = True
             flash('You were logged in')
-        return url_for('success')
-    return url_for('success')
+            return url_for('success')
+        else:
+            error = 'Invalid username'
+    return url_for('index')
+
+def check_match(guess, ans):
+
+    return True
 
 @app.route("/success")
 def success():
@@ -44,7 +48,7 @@ def success():
 def logout():
     session.pop('logged_in', None)
     flash('You were logged out')
-    return render_template('index.html')
+    return redirect(url_for('index'))
 
 # initializes DB
 def init_db():
