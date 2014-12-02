@@ -1,0 +1,5 @@
+drop table if exists users;
+create table users (
+  name text not null,
+  data text not null
+);

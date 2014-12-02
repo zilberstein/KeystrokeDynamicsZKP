@@ -21,6 +21,7 @@ def new_user():
     # not safe at all
     g.db.commit()
     # result = g.db.execute("SELECT * FROM USERS")
+    # flash('Sucessfully created account')
     return "Successfully created account."
 
 @app.route("/login/<s>", methods=['GET'])
