@@ -2,6 +2,7 @@ import sqlite3
 from flask import Flask, render_template, request, g, redirect, url_for, \
              abort, flash, session
 from contextlib import closing
+from math import sqrt
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.config.from_object('__init__')
@@ -23,12 +24,13 @@ def new_user():
     # result = g.db.execute("SELECT * FROM USERS")
     return "Successfully created account."
 
-@app.route("/login/<s>", methods=['GET'])
-def login(s):
+@app.route("/login/", methods=['POST'])
+def login():
     error = None
-    if request.method == 'GET':
-        return url_for('success')
-    if check_match(request.form['name'], request.form['has']):
+    if request.method == 'POST':
+        r = g.db.execute('SELECT hash FROM USERS WHERE name = \"' + request.form['name'] + '\"')
+        #print r.fetchone()
+        if check_match(request.form['hash'], r.fetchone()[0]):
             session['logged_in'] = True
             flash('You were logged in')
             return url_for('success')
@@ -37,8 +39,16 @@ def login(s):
     return url_for('index')
 
 def check_match(guess, ans):
-
-    return True
+    total = 0
+    s = guess.split('/')[1:-1]
+    t = ans.split('/')[1:-1]
+    for n1, n2 in zip(s,t):
+        total += (float(n1) - float(n2)) ** 2
+    total = sqrt(total / len(s))
+    print total
+    if total < 50:
+        return True
+    return False
 
 @app.route("/success")
 def success():
