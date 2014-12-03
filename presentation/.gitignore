@@ -5,3 +5,5 @@
 *.snm
 *.toc
 *.pdf
+*.bbl
+*.blg
