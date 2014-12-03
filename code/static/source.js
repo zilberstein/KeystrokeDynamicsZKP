@@ -50,13 +50,12 @@ function sendPwd(data) {
     alert(data);
 }
 
-function calcVector(name) {
-    result = asc2hex(String(name));
-    console.log(data)
-    for (var i in data){
-        result += data[i];
+function calcVector(strokes) {
+    var result = "/";
+    for (i = 0; i < strokes.length; i++) {
+        result += strokes[i].toString() + '/';
     }
-    data = [];
+    console.log(result);
     return result;
 }
 
@@ -71,7 +70,7 @@ $('#username').keydown(function(event) {
             url: baseURL + 'newuser/',
             data : {
                 'name' : name,
-                'hash' : calcVector(name),
+                'hash' : calcVector(trials[tnum].strokes),
             },
             success : sendPwd
         });
@@ -92,14 +91,18 @@ function httpGet(theUrl)
 // log in
 $('#box').keydown(function(event) {
     recordTime();
+    name = $('#box').val();
     if (event.which == 13) {
         name = $('#box').val();
-        $.ajax(baseURL + 'login/' + calcVector(name),
-            {success : function(d){
-                window.location.href = d}
-            });
-        //ajax breaks everything, cant be redirected or auth
-        //window.location.href = (httpGet(baseURL + 'login/' + calcVector(name)))
+        $.ajax({
+            type : "POST",
+            url  : baseURL + 'login/',
+            data : {
+                'name' : name,
+                'hash' : calcVector(trials[tnum].strokes)
+            },
+            success : function(d){window.location.href = d}
+        });
         clearBox($('#box'));
     }
 });
