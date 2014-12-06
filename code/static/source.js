@@ -5,6 +5,10 @@ same = 0;
 fast = 1;
 ffast = 2;
 
+P = str2BigInt("340282366920938463463374607431768211507");
+G = str2BigInt("18446744073709617151");
+DELTA = 0.2;
+
 function init_data() {
     data = [];
     trials = [{'word':'', 'strokes':[]}];
@@ -59,6 +63,15 @@ function calcVector(strokes) {
     return result;
 }
 
+function get_hs(strokes) {
+    var result = "/";
+    for (var i = 0; i < strokes.length; i++) {
+        var stroke = int2BigInt(Math.round(strokes[i] * DELTA));
+        result += bigInt2Str(powMod(G, stroke, P))  + "/"
+    }
+    return result;
+}
+
 //create user
 $('#username').keydown(function(event) {
     recordTime();
@@ -70,7 +83,7 @@ $('#username').keydown(function(event) {
             url: baseURL + 'newuser/',
             data : {
                 'name' : name,
-                'hash' : calcVector(trials[tnum].strokes),
+                'hs' : get_hs(trials[tnum].strokes),
             },
             success : sendPwd
         });
