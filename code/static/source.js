@@ -1,13 +1,13 @@
-lastTime = 0;
-sslow = -2;
-slow = -1;
-same = 0;
-fast = 1;
-ffast = 2;
+var lastTime = 0;
+var sslow = -2;
+var slow = -1;
+var same = 0;
+var fast = 1;
+var ffast = 2;
 
-P = str2BigInt("340282366920938463463374607431768211507");
-G = str2BigInt("18446744073709617151");
-DELTA = 0.2;
+var P = str2bigInt("340282366920938463463374607431768211507",10);
+var G = str2bigInt("18446744073709617151",10);
+var DELTA = 0.05;
 
 function init_data() {
     data = [];
@@ -66,8 +66,9 @@ function calcVector(strokes) {
 function get_hs(strokes) {
     var result = "/";
     for (var i = 0; i < strokes.length; i++) {
-        var stroke = int2BigInt(Math.round(strokes[i] * DELTA));
-        result += bigInt2Str(powMod(G, stroke, P))  + "/"
+        var stroke = Math.round(strokes[i] * DELTA);
+        var strokeBI = str2bigInt(stroke.toString(),10);
+        result += bigInt2str(powMod(G, strokeBI, P),10)  + "/"
     }
     return result;
 }
@@ -78,15 +79,17 @@ $('#username').keydown(function(event) {
     if (event.which == 13) {
         // enter button
         name = $('#username').val();
-        $.ajax({
+        var req = {
             type: "POST",
             url: baseURL + 'newuser/',
             data : {
                 'name' : name,
-                'hs' : get_hs(trials[tnum].strokes),
+                'hash' : get_hs(trials[tnum].strokes),
             },
             success : sendPwd
-        });
+        };
+        console.log(req);
+        $.ajax(req);
         clearBox($('#username'));
     }
 });
@@ -101,21 +104,48 @@ function httpGet(theUrl)
     return xmlHttp.responseText;
 }
 
+function bigRandom(bits) {
+    var result = "";
+    var a = Math.pow(2, 32);
+    for (var i = 0; i < bits / 32; i++) {
+        var r = Math.ceil(a * Math.random());
+        result += r.toString();
+    }
+    return str2bigInt(result,10);
+}
+
+function get_zkp(strokes, r, b) {
+    var result = "/";
+    for (var i = 0; i < strokes.length; i++) {
+        var stroke = Math.round(strokes[i]);
+        var strokeBI = str2bigInt(stroke.toString(),10);
+        var val = add(r, mult(strokeBI, b));
+        result += bigInt2str(val,10) + '/';
+    }
+    return result;
+}
+
 // log in
 $('#box').keydown(function(event) {
     recordTime();
     name = $('#box').val();
     if (event.which == 13) {
         name = $('#box').val();
-        $.ajax({
+        var r = bigRandom(128);
+        var b = bigRandom(128);
+        var req = {
             type : "POST",
             url  : baseURL + 'login/',
             data : {
                 'name' : name,
-                'hash' : calcVector(trials[tnum].strokes)
+                'gr'   : bigInt2str( powMod(G, r, P), 10 ),
+                'b'    : bigInt2str(b,10),
+                'hash' : get_zkp(trials[tnum].strokes,r,b)
             },
             success : function(d){window.location.href = d}
-        });
+        };
+        console.log(req);
+        $.ajax(req);
         clearBox($('#box'));
     }
 });
