@@ -1,0 +1,139 @@
+\documentclass[11pt]{article}
+
+% This first part of the file is called the PREAMBLE. It includes
+% customizations and command definitions. The preamble is everything
+% between \documentclass and \begin{document}.
+
+\usepackage[margin=1in]{geometry}  % set the margins to 1in on all sides
+\usepackage{graphicx}              % to include figures
+\usepackage{amsmath}               % great math stuff
+\usepackage{amsfonts}              % for blackboard bold, etc
+\usepackage{amsthm}                % better theorem environments
+\usepackage{array}
+
+% various theorems, numbered by section
+
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{conj}[thm]{Conjecture}
+
+\DeclareMathOperator{\id}{id}
+
+\newcommand{\bd}[1]{\mathbf{#1}}  % for bolding symbols
+\newcommand{\RR}{\mathbb{R}}      % for Real numbers
+\newcommand{\ZZ}{\mathbb{Z}}      % for Integers
+\newcommand{\col}[1]{\left[\begin{matrix} #1 \end{matrix} \right]}
+\newcommand{\comb}[2]{\binom{#1^2 + #2^2}{#1+#2}}
+
+
+\begin{document}
+
+
+\nocite{*}
+
+\title{A Zero-Knowledge Protocol for Keystroke Authentication}
+
+\author{Noam Zilberstein and Jonanthan Chen\thanks{Advised by Nadia Henninger} \\
+University of Pennsylvania
+}
+
+\maketitle
+
+\begin{abstract}
+  We present a protocol to authenticate users without the use of a password. Passwords have many inherent problems. Several well known companies such as Dropbox and Apple have recently been targets of large scale security breaches in which passwords were compromised. Because of this risk, users are urged to use different passwords for each account. It is very difficult to come up with and remember enough secure passwords considering how many online accounts most people have today.
+
+Many common websites such as Facebook and Dropbox are already encouraging the use two-factor authentication to subvert these issues. These forms of authentication usually involve confirming the possession of a piece of hardware. Instead, we suggest an alternate authentication factor that does not require possession of additional hardware. This authentication scheme is based on keystroke dynamics; the user is authenticated based on the timing of his/her keystrokes when typing a particular phrase (such as their name). When typing, each individual has their own typing pattern consisting of lag/dwell time (how long a key is pressed) and rhythms (typing certain clusters of letters faster).  This typing pattern translates into a typing signature which can be measured and used as a form of biometric data.
+\end{abstract}
+
+
+\section{Introduction}
+
+
+\section{Background}
+
+\section{Related Work}
+
+\section{Protocol}
+\subsection{The Basic Protocol}
+
+\begin{figure}[h!]
+\centering
+\fbox{
+\begin{tabular}{m{2.5in}m{.5in}m{2.5in}}
+\textbf{Prover} && \textbf{Verifier}\\
+User types name ($A$) in web client. Keystroke vector ($V$) is recorded &$\xrightarrow{(A, V)}$ & $(A,V)$ is stored in the database
+\end{tabular}}
+\caption{Account creation in the basic protocol}
+\label{fig:basic_new}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+\fbox{
+\begin{tabular}{m{2.5in}m{.5in}m{2.5in}}
+\textbf{Prover} && \textbf{Verifier}\\
+User types name ($A$) in web client. Keystroke vector ($\tilde V$) is recorded &$\xrightarrow{(A, \tilde V)}$ & Lookup key $A$ in the database to get $V$\\
+Report result&$\xleftarrow{f(V, \tilde V)}$ & Send decision
+\end{tabular}}
+\caption{Authentication in the basic protocol}
+\label{fig:basic_auth}
+\end{figure}
+The basic protocol authenticates users by directly comparing the given keystroke vector to the expected keystroke vector. This protocol is not designed with security in mind; any adversary that can see the information exchange between the prover and the verifier will be able to directly discern the keystroke vectors. This protocol is not meant to be used in a real implementation of the system, but instead it is meant to be a point of comparison for the zero knowledge version.
+
+We will let $V=v_1v_2\ldots v_n$ be the real keystroke vector for user $A$ and $\tilde V = \tilde v_1\tilde v_2\ldots\tilde v_n$ be the keystroke vector associated with a login attempt by someone claiming to be $A$. Account creation in the basic protocol is very simple. First, the prover sends a pair $(A,V)$ containing the user's name and keystroke timings to the verifier. The verifier then stores this information in its knowledge bank. This protocol is outlined in Figure~\ref{fig:basic_new}. Authentication (as seen in Figure~\ref{fig:basic_auth}) is then performed by applying a comparison function $c$ to the expected keystroke vector for user $A$ and the login vector. The comparison function is defined as follows:
+$$\begin{array}{ccc}
+c(V,\tilde V) = \begin{cases}
+  1, & d(V, \tilde V) \le \varepsilon \\
+  0, & \text{otherwise}
+\end{cases}
+& \;\;\;\;\; &
+d(V,\tilde V) = \sqrt{\frac1n\sum_{i=1}^n(v_i - \tilde v_i)^2}
+\end{array}$$
+Above, $\varepsilon$ is a constant error tolerance which is carefully chosen considering the tradeoffs between security and ease of login. This tradeoff will be examined closely in section~\ref{sec:chall}.
+
+Disregarding the fact that the keystroke vector $V$ is immediately discernable from eavesdropping on the account creation process, this protocol will be the baseline for evaluating the performance of the zero-knowledge version.
+
+\subsection{The Zero-Knowledge Protocol}
+The zero knowledge builds on top of the basic protocol with the added constraint that no meaningful information about the keystroke vector is ever transferred accross the network. This also means that the representation of the keystroke vector that is stored in the database does not leak any information about the keystroke vector itself. If the database were completely compromised, there would thus be no breach in security; the information in the database can be used to verify a user's identity and nothing more.
+
+
+\begin{figure}
+\centering
+\fbox{
+\begin{tabular}{m{2.5in}m{.5in}m{2.5in}}
+\textbf{Prover} && \textbf{Verifier}\\
+Choose some generator $g$ & $\xrightarrow{g}$ & Remember $g$\\
+User types name ($A$) in web client. Keystroke vector ($V$) is recorded. Let $h = g^{f(V)}$ &$\xrightarrow{h}$ & $(A,g,h)$ is stored in the database
+\end{tabular}}
+\caption{Account creation in the zero-knowledge protocol}
+\label{fig:zk_new}
+\end{figure}
+
+\begin{figure}
+\centering
+\fbox{
+\begin{tabular}{m{2.5in}m{.5in}m{2.5in}}
+\textbf{Prover} && \textbf{Verifier}\\
+User types name ($A$) in web client. Keystroke vector ($\tilde V$) is recorded &$\stackrel{A}{\longrightarrow}$ & \\
+&$\stackrel{g}\longleftarrow$ & Lookup key $A$ in the database to get $g$ and $h$\\
+Choose $r\in_R\mathbb{Z}_g$, let $a = g^r$ & $\stackrel{a}\longrightarrow$ & \\
+& $\stackrel{b}\longleftarrow$ & Choose $b\in_R\mathbb{Z}_g$ \\
+Let $c = r + f(\tilde V)\cdot b$ & $\stackrel{c}\longrightarrow$ & \\
+Report decision & $\stackrel{ah^b \stackrel{?}{=} g^c}\longleftarrow$ &
+\end{tabular}}
+\caption{Authentication in the zero-knowledge protocol}
+\label{fig:zk_new}
+\end{figure}
+
+
+\section{Challenges and Limitations}
+\label{sec:chall}
+
+\bibliographystyle{plain}
+
+\bibliography{paper}
+
+
+\end{document}
