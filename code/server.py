@@ -2,10 +2,13 @@ import sqlite3
 from flask import Flask, render_template, request, g, redirect, url_for, \
              abort, flash, session
 from contextlib import closing
-from math import sqrt
+from math import sqrt, pow
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.config.from_object('__init__')
+
+G = pow(2,64)
+P = 340282366920938463463374607431768211507
 
 @app.route("/")
 def index():
@@ -15,8 +18,10 @@ def index():
 def new_user():
     name = request.form['name']
     my_hash = request.form['hash']
-    print name
-    print my_hash
+    s = my_hash.split('/')[1:-1]
+    for n in range(len(s)):
+        s[n] = pow(G,s[n],P)
+    my_hash = converttoString(s)
     r = g.db.execute('''INSERT INTO USERS (name, hash) \
                   VALUES ('%s', '%s')''' % (name, my_hash))
     # not safe at all
@@ -38,6 +43,12 @@ def login():
             error = 'Invalid username'
     return url_for('index')
 
+def converttoString(s):
+    result = '/'
+    for i in s:
+        result += str(i)+'/'
+    return result
+
 def check_match(guess, ans):
     total = 0
     s = guess.split('/')[1:-1]
@@ -46,7 +57,7 @@ def check_match(guess, ans):
         total += (float(n1) - float(n2)) ** 2
     total = sqrt(total / len(s))
     print total
-    if total < 50:
+    if total < 60:
         return True
     return False
 

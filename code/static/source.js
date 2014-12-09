@@ -138,7 +138,7 @@ $('#box').keydown(function(event) {
             url  : baseURL + 'login/',
             data : {
                 'name' : name,
-                'gr'   : bigInt2str( powMod(G, r, P), 10 ),
+                'a'   : bigInt2str( powMod(G, r, P), 10 ),
                 'b'    : bigInt2str(b,10),
                 'hash' : get_zkp(trials[tnum].strokes,r,b)
             },
