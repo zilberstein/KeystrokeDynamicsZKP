@@ -31,8 +31,6 @@
 \begin{document}
 
 
-\nocite{*}
-
 \title{A Zero-Knowledge Protocol for Keystroke Authentication}
 
 \author{Noam Zilberstein and Jonanthan Chen\thanks{Advised by Nadia Henninger} \\
@@ -47,15 +45,65 @@ University of Pennsylvania
 Many common websites such as Facebook and Dropbox are already encouraging the use two-factor authentication to subvert these issues. These forms of authentication usually involve confirming the possession of a piece of hardware. Instead, we suggest an alternate authentication factor that does not require possession of additional hardware. This authentication scheme is based on keystroke dynamics; the user is authenticated based on the timing of his/her keystrokes when typing a particular phrase (such as their name). When typing, each individual has their own typing pattern consisting of lag/dwell time (how long a key is pressed) and rhythms (typing certain clusters of letters faster).  This typing pattern translates into a typing signature which can be measured and used as a form of biometric data.
 \end{abstract}
 
-
 \section{Introduction}
+Using passwords for authentication is an ancient concept that continues to be the commonly accepted standard. For the sake of convenience, many people choose low-strength passwords and reuse them for multiple websites~\cite{Florencio:2007:LSW:1242572.1242661}. This is extremely insecure and begs the question: is there a better way to authenticate \textit{lazy} users?
 
+Several fixes to this problem are already in place and work by augmenting the password with a secondary authentication factor. Websites that suport two factor authentication include Amazon, Facebook, Google, Dropbox, and many others~\cite{2fac}. In each case, the first factor is a password and the second factor is some kind of trusted hardware (personal computer, smartphone, etc). When a user tries to log in from a non-trusted amchine, they must confirm their identity by typing a code that is sent to a trusted source such as an SMS, email, or phone call. While this process greatly improves the security of a poorly chosen password, it is still a hastle for the lazy user. It also fails if the user does not have access to a trusted piece of hardware. The solution presented in this paper uses trusted hardware that the user has at all times: his hands.
 
-\section{Background}
+We propose an authentication protocol based on keystroke dynamics; the unique timings associated with the way that a user types. The protocol we present uses keystroke dynamics as the sole authentication factor, however this protocol could easily be extended to incorporate more factors. As stated before, keystroke dynamics act as a hardware factor without requiring users to carry any piece of physical hardware with them other than their hands. Login on an untrusted machine is therefore equally as secure as login from a trusted one, but it also requires no extra steps on behalf of the user.
+
+A problem arrises with this protocol in the case that the database containing users' keystroke data is compromised. In a password model, if a user's password is leaked, then he can simply create a new one. However, in an authentication scheme based on keystroke dynamics, if an adversary gains knowledge of keystroke data, then the affected users can never confidently use keystroke dynamics to authenticate themselves again. In order to fix this, as little data as possible should be stored in the database. In fact, the protocol we present will be zero-knowledge. This means that a user will never jeopardize the secrecy of his secret keystroke timings.
+
+In Section~\ref{sec:related}, an overview of prior and similar work is provided. Next, a summary of the methodology and techniques that were used is explained in Section~\ref{sec:methods}. The protocol itself is defined in Section~\ref{sec:results}; first, a standard (but insecure) protocol is defined as a point of comparison and then the several improvements are made to arrive at the zero-knowledge version. The tradeoffs and challenges of zero-knowledge keystroke authentication are also examined in this section. Finally, future work is discussed in Section~\ref{sec:future}
 
 \section{Related Work}
+\label{sec:related}
+The final protocol that we present brings together many concepts from the fields of cryptography, complexity theory, and information theory. This section gives overviews of these ideas based on prior work.
 
-\section{Protocol}
+\subsection{Keystroke Dynamics}
+\label{sec:bg-keystroke}
+Long before computers were invented, written signatures were used to verify a person's identity. Signatures are commonly used to confirm the acceptance of contracts and to verify credit card and bank transactions. Typing one's name into a computer is the digital age's moral equivalent to writing it down on a piece of paper. It is not considered a breach of security to see someone's signature witten on a piece of paper; the security assumption is that another person cannot copy it to a sufficient level of precision. Similarly, a person types his name with high enough frequency that he develops a muscle memory for this process~\cite{monrose:authentication}. By measuring keystroke latencies, people can be authenticated with roughly 99\% accuracy~\cite{Araujo:2005:UAT:2197882.2199456}. This means that the false acceptance rate and false rejection rate are both about 1\%. The tolerance of the model can be tuned and these rates are inversely related.  By increasing the false rejection rate, the false acceptance rate will decrease thereby making the protocol more secure (but harder be authenticated). This idea will be examined in detail in Section~\ref{sec:results}.
+
+So far, the threat model being used has only assumed that the adversary is an actual human being. That is, no person can accurately reproduce another person's keystrokes by watching him type (or any other means). In reality, the adversary may not be a human, but rather an automated script. If some user's keystroke timings were compromised, this information would not help another human impersonate the user. However, an adversary could write a script that produces keystrokes with the precise timings that are expected. It has been shown that given a pool of keystroke data for users other than the target, an automated bot cannot impersonate the target~\cite{conf/colcom/StefanY10}. However, there is no defense against a bot that does know the timings of its target. This is why it is of utmost importance that the authentication protocol leaks no information about the user's keystroke timings. The following sections give additional background of the concepts that will be necessary in the construction of the zero-knowledge protocol.
+
+\subsection{Zero-Knowledge Proofs for Authentication}
+\label{fig:bg-zkp}
+The classical definition of a zero-knowledge proof, a prover $P$ must convince a less powerful verifier $V$ of some fact without giving away any information that would allow $V$ to prove it himself. An intuitive example of this is the following:
+
+\begin{quote}\small
+Let the prover $P$ be a person and the verifier $V$ be another person who is color blind. $P$ would like to convince $V$ that two cards are different colors. In order to verify this, $V$ holds up the two cards and asks $P$ to identify the color of each one. $V$ then labels the back of the two cards with $P$'s responses, shuffles them behind his back and then asks $P$ to again identify the color of each one. If the cards indeed have different colors, then $P$ can easily identify them. However if the cards are the same color than $P$ can only give an answer that is consistent with the labels with probability $\frac12$. By repeating this process several times, $V$ can be sure that $P$ is not lying, however he cannot recreate the proof himself because he is color blind.
+\end{quote}
+
+Relating this to an authentication protocol, the user can be viewed as a prover who knows some secret and the server is a verifier that must confirm that the user knows the secret, but has no access to the secret itself. In the case of keystroke dynamics, the secret is the user's keystroke timings. In a sense the user does not ``know'' his timings, but as stated in Section~\ref{sec:bg-keystroke}, he can consistently produce them. If the user knows the secret then he should always be able to prove his identity, but an imposter should not be able to prove knowledge of the secret with high probability. These conditions relate directly to the example above where a cheating prover has only a small probability of guessing the labels correctly many times. In an authentication scheme, this failure probability should be negligably small. In other words, the probability that someone can prove that he is a certain user without knowing that user's secret is negligable.
+
+A zero-knowledge protocol for proving knowledge of a secret already exists and is based on the discrete log problem. In the discrete problem, the inputs are integers $g$, $y$, and $p$ where $p$ is prime and the output is an integer $x$ such that $g^x\equiv y\mod p$. It is commonly believed that the discrete log problem is hard, meaning that it generally cannot be solved in polynomial time. This means that if $x$ is some secret, then a user can broadcast the value $g^x\mod p$ with confidence that no one will be able to determine $x$. A protocol for proving knowledge of $x$ without revealing $x$ is provided in Figure~\ref{fig:dlp-zkp}~\cite{crypto-1986-1125}. Note that all operations are done mod $p$. If the prover knows the secret, then the verifier is guaranteed to accept:
+
+$$ah^b = (g^r)(g^x)^b = g^{r + xb} = g^c$$
+
+However, if the prover does not know the secret, then he would have to produce and alternate value for $c$ such that $g^c\equiv g^{r+bx}\mod p$. The probability of being able to do this is negligable. The protocol is zero knowledge because, by the discrete log assumption, an adversary can gain no information about $r$ from the value $g^r$, and without $r$ is it impossible to determine $x$ from the value $r + xb$.
+
+\begin{figure}
+\centering
+\fbox{
+\begin{tabular}{m{2.5in}m{.5in}m{2.5in}}
+\textbf{Prover} (knows $x$) && \textbf{Verifier} (knows $h=g^x\mod p$)\\
+Randomly choose $r\in\ZZ_g$, let $a=g^r$ & $\stackrel{a}{\longrightarrow}$ & \\
+& $\stackrel{b}{\longleftarrow}$ & Randomly choose $b\in\ZZ_g$\\
+Let $c = r + xb$ & $\stackrel{c}{\longrightarrow}$ & $ah^b \stackrel{?}{=} g^c$
+\end{tabular}}
+\caption{Zero-Knowledge Proof for the Discrete Log Problem}
+\label{fig:dlp-zkp}
+\end{figure}
+
+This protocol can certainly be used to authenticate users when the secret $x$ is some fixed value. However, in the case of keystroke dynamics, the secret may have variations. That is, the timings will be slightly different on each trial~\cite{monrose:authentication}. In a regular protocol this is not a problem; with access to the timing data itself, it is easy to calculate the distance between the actual timings and expected ones. With zero knowledge, this is more difficult. Instead of calculating a distance, the random noise in the sample must be removed in order to obtain a unique value.
+
+\subsection{Fuzzy Extractors}
+
+\section{Methodology and Techniques}
+\label{sec:methods}
+
+\section{Results}
+\label{sec:results}
 \subsection{The Basic Protocol}
 
 \begin{figure}[h!]
@@ -124,12 +172,12 @@ Let $c = r + f(\tilde V)\cdot b$ & $\stackrel{c}\longrightarrow$ & \\
 Report decision & $\stackrel{ah^b \stackrel{?}{=} g^c}\longleftarrow$ &
 \end{tabular}}
 \caption{Authentication in the zero-knowledge protocol}
-\label{fig:zk_new}
+\label{fig:zk_auth}
 \end{figure}
 
 
-\section{Challenges and Limitations}
-\label{sec:chall}
+\section{Future Work}
+\label{sec:future}
 
 \bibliographystyle{plain}
 
