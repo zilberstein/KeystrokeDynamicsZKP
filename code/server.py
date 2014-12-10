@@ -2,7 +2,7 @@ import sqlite3
 from flask import Flask, render_template, request, g, redirect, url_for, \
              abort, flash, session
 from contextlib import closing
-from math import sqrt, pow
+from math import sqrt
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.config.from_object('__init__')
@@ -18,10 +18,6 @@ def index():
 def new_user():
     name = request.form['name']
     my_hash = request.form['hash']
-    s = my_hash.split('/')[1:-1]
-    for n in range(len(s)):
-        s[n] = pow(G,s[n],P)
-    my_hash = converttoString(s)
     r = g.db.execute('''INSERT INTO USERS (name, hash) \
                   VALUES ('%s', '%s')''' % (name, my_hash))
     # not safe at all
@@ -35,7 +31,17 @@ def login():
     if request.method == 'POST':
         r = g.db.execute('SELECT hash FROM USERS WHERE name = \"' + request.form['name'] + '\"')
         #print r.fetchone()
-        if check_match(request.form['hash'], r.fetchone()[0]):
+        '''
+        refer to slides:
+        a = g^r
+        b in Z_r chosen by server
+        c = r+ f(V) + b
+        '''
+        a = request.form['a']
+        b = request.form['b']
+        c = request.form['c']
+        print a
+        if check_match(long(a), long(b), c, r.fetchone()[0]):
             session['logged_in'] = True
             flash('You were logged in')
             return url_for('success')
@@ -49,15 +55,16 @@ def converttoString(s):
         result += str(i)+'/'
     return result
 
-def check_match(guess, ans):
+# ZK authentication match
+def check_match(a, b, c, ans):
     total = 0
-    s = guess.split('/')[1:-1]
+    s = c.split('/')[1:-1]
     t = ans.split('/')[1:-1]
     for n1, n2 in zip(s,t):
-        total += (float(n1) - float(n2)) ** 2
-    total = sqrt(total / len(s))
+        total += abs(pow(G,long(n1), P) - pow(a*long(n2),b, P))
+    # total = sqrt(total / len(s))
     print total
-    if total < 60:
+    if total > 60:
         return True
     return False
 
