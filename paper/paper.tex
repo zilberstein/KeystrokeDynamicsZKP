@@ -10,6 +10,9 @@
 \usepackage{amsfonts}              % for blackboard bold, etc
 \usepackage{amsthm}                % better theorem environments
 \usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\usetikzlibrary{positioning}
 
 % various theorems, numbered by section
 
@@ -29,7 +32,14 @@
 
 
 \begin{document}
-
+% Define block styles
+\tikzstyle{decision} = [diamond, draw, fill=blue!20, 
+    text width=2em, text badly centered, inner sep=0pt]
+\tikzstyle{block} = [rectangle, draw, fill=blue!20, 
+    text width=5em, text centered, rounded corners, minimum height=2em]
+\tikzstyle{line} = [draw, -latex']
+\tikzstyle{cloud} = [draw, ellipse,fill=red!20,
+    minimum height=2em]
 
 \title{A Zero-Knowledge Protocol for Keystroke Authentication}
 
@@ -54,7 +64,7 @@ We propose an authentication protocol based on keystroke dynamics; the unique ti
 
 A problem arrises with this protocol in the case that the database containing users' keystroke data is compromised. In a password model, if a user's password is leaked, then he can simply create a new one. However, in an authentication scheme based on keystroke dynamics, if an adversary gains knowledge of keystroke data, then the affected users can never confidently use keystroke dynamics to authenticate themselves again. In order to fix this, as little data as possible should be stored in the database. In fact, the protocol we present will be zero-knowledge. This means that a user will never jeopardize the secrecy of his secret keystroke timings.
 
-In Section~\ref{sec:related}, an overview of prior and similar work is provided. Next, a summary of the methodology and techniques that were used is explained in Section~\ref{sec:methods}. The protocol itself is defined in Section~\ref{sec:results}; first, a standard (but insecure) protocol is defined as a point of comparison and then the several improvements are made to arrive at the zero-knowledge version. The tradeoffs and challenges of zero-knowledge keystroke authentication are also examined in this section. Finally, future work is discussed in Section~\ref{sec:future}
+In Section~\ref{sec:related}, an overview of prior and similar work is provided. Next, a summary of the methodology and techniques that were used is explained in Section~\ref{sec:methods}. The protocol itself is defined in Section~\ref{sec:results}; first, a standard (but insecure) protocol is defined as a point of comparison and then the several improvements are made to arrive at the zero-knowledge version. The tradeoffs and challenges of zero-knowledge keystroke authentication are also examined in this section. Finally, future work is discussed in Section~\ref{sec:future}.
 
 \section{Related Work}
 \label{sec:related}
@@ -62,7 +72,12 @@ The final protocol that we present brings together many concepts from the fields
 
 \subsection{Keystroke Dynamics}
 \label{sec:bg-keystroke}
-Long before computers were invented, written signatures were used to verify a person's identity. Signatures are commonly used to confirm the acceptance of contracts and to verify credit card and bank transactions. Typing one's name into a computer is the digital age's moral equivalent to writing it down on a piece of paper. It is not considered a breach of security to see someone's signature witten on a piece of paper; the security assumption is that another person cannot copy it to a sufficient level of precision. Similarly, a person types his name with high enough frequency that he develops a muscle memory for this process~\cite{monrose:authentication}. By measuring keystroke latencies, people can be authenticated with roughly 99\% accuracy~\cite{Araujo:2005:UAT:2197882.2199456}. This means that the false acceptance rate and false rejection rate are both about 1\%. The tolerance of the model can be tuned and these rates are inversely related.  By increasing the false rejection rate, the false acceptance rate will decrease thereby making the protocol more secure (but harder be authenticated). This idea will be examined in detail in Section~\ref{sec:results}.
+Long before computers were invented, written signatures were used to verify a person's identity. Signatures are commonly used to confirm the acceptance of contracts and to verify credit card and bank transactions. Typing one's name into a computer is the digital age's moral equivalent to writing it down on a piece of paper. It is not considered a breach of security to see someone's signature witten on a piece of paper; the security assumption is that another person cannot copy it to a sufficient level of precision. Similarly, a person types his name with high enough frequency that he develops a muscle memory for this process~\cite{monrose:authentication}.
+
+Of course, the fact that a person can consistently type his name with the same keystroke timings does not alone make keystroke dynamics a good authentication technique; it is necessary, but not sufficient. If many people type in very similar ways, then they will all be authenticated as each other. There must be sufficient entropy in the keystroke timings. In other words, a vector of keystroke timings must contain enough information to differentiate between users. It has been shown that there is a relatively small amount of entropy in a keystroke vector generated by typing a fixed 8-character password~\cite{Monrose:1999:PHB:319709.319720}. However, this does not rule out the possibility of keystroke based authentication. In the same way that long passwords are considered more secure than short ones, longer keystroke vectors contain more entropy than short ones. Many more bits of entropy are generated by typing ``Arnold Schwarzenegger
+'' than by typing ``John Doe''. Most people have names that are longer than eight characters, so the entropy will be boosted over the results of~\cite{Monrose:1999:PHB:319709.319720}. In addition, people can generally type their own name with more consistency than an arbitrary word (this conjecture was validated in our trials). This means that the protocol can have less slack than the one used to measure entropy in~\cite{Monrose:1999:PHB:319709.319720}.
+
+In fact, despite potential entropy concerns, it has been shown that people can be authenticated by measuring keystroke timings with roughly 99\% accuracy~\cite{Araujo:2005:UAT:2197882.2199456}. This means that the false acceptance rate and false rejection rate are both about 1\%. The tolerance of the model can be tuned and these rates are inversely related.  By increasing the false rejection rate, the false acceptance rate will decrease thereby making the protocol more secure (but harder be authenticated). This idea will be examined in detail in Section~\ref{sec:results}.
 
 So far, the threat model being used has only assumed that the adversary is an actual human being. That is, no person can accurately reproduce another person's keystrokes by watching him type (or any other means). In reality, the adversary may not be a human, but rather an automated script. If some user's keystroke timings were compromised, this information would not help another human impersonate the user. However, an adversary could write a script that produces keystrokes with the precise timings that are expected. It has been shown that given a pool of keystroke data for users other than the target, an automated bot cannot impersonate the target~\cite{conf/colcom/StefanY10}. However, there is no defense against a bot that does know the timings of its target. This is why it is of utmost importance that the authentication protocol leaks no information about the user's keystroke timings. The following sections give additional background of the concepts that will be necessary in the construction of the zero-knowledge protocol.
 
@@ -98,6 +113,78 @@ Let $c = r + xb$ & $\stackrel{c}{\longrightarrow}$ & $ah^b \stackrel{?}{=} g^c$
 This protocol can certainly be used to authenticate users when the secret $x$ is some fixed value. However, in the case of keystroke dynamics, the secret may have variations. That is, the timings will be slightly different on each trial~\cite{monrose:authentication}. In a regular protocol this is not a problem; with access to the timing data itself, it is easy to calculate the distance between the actual timings and expected ones. With zero knowledge, this is more difficult. Instead of calculating a distance, the random noise in the sample must be removed in order to obtain a unique value.
 
 \subsection{Fuzzy Extractors}
+Fuzzy extractors are used to extract a uniformly random string $S$ from a noisy input $\mathfrak{B}$, also known as a biometric template. A similar input $\tilde{\mathfrak{B}}$ will product the exact same string $S$~\cite{conf/csreaSAM/AlvarezEA09}. In the case of keystroke based authentication, $S$ is a user's unique signature which can be extracted from a noisy input. It is then possible to prove knowledge of the secret value $S$ using a zero-knowledge proof.
+
+The enrollment phase for a fuzzy extractor is shown in Figure~\ref{fig:enroll}~\cite{conf/csreaSAM/AlvarezEA09}. Given a biometric template $\mathfrak{B}$ and a secret $S$, the enrollment function produces additional data $H$ and $\Delta$ that are used to recover $S$. The values of $H$ and $\Delta$ can safely be made public without compromising the security of the secret $S$. First, the secret is represented as an integer in base $b$, ie $S = s_0s_1\ldots s_d$. A polynomial $p(x)$ is now derived whose coefficients are the base $b$ digits of $s$:
+
+$$p(x) = s_0 + s_1x + s_2x^2 + \cdots + s_dx^d$$
+
+Next, $n$ random integers are generated $x_1, x_2, \ldots, x_n$ and $p(x)$ is evaluated at each of these points to obtain $y_i = p(x_i)$. The value $n$ controls how fuzzy an accepting template can be. For technical reasons, $n$ must be much greater than $d$. The $n$ coordinate pairs are then concatenated together as $x_i||y_i$ and encoded using a Reed-Solomon code to form the set $C = \{c_0, c_1,\ldots, c_{n-1}\}$. A Reed-Solomon code is an encoding of a message using extra bits such that if the message is corrupted, it can still be recovered accurately~\cite{reed60polynomial}. A hash function $\mathfrak{h}$ is applied to all of the Reed-Solomon encoded values to obtain $H = \{\mathfrak h(c_0), \mathfrak h(c_1), \ldots, \mathfrak h(c_{n-1})\}$. The input template $\mathfrak B$ is divided into $n$ parts $b_0||b_1||\ldots||b_{n-1}$ and each entry in $\Delta = \{\delta_0, \delta_1, \ldots, \delta_{n-1}\}$ is obtained as $\delta_i = c_i - b_i$. The values $H$, $\Delta$, $b$, $d$, and $\mathfrak h$ are then stored to be used for extraction~\cite{conf/csreaSAM/AlvarezEA09}.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[node distance = .5cm and 1cm]
+    % Place nodes
+    \node [block] (msg) {Message};
+    \node [block, right= 3cm of msg] (enc) {Encoded Message};
+    \node [decision, right= of enc] (plus) {$-$};
+    \node [below= of enc] (hash) {$H$};
+    \node [below= of plus] (delta) {$\Delta$};
+    \node [above= of plus] (temp) {$\mathfrak{B}$};
+    \node [block, above left= of msg] (poly) {$p(x)$};
+    \node [left= of poly] (secret) {Secret ($S$)};
+    \node [below left= of msg] (rand1) {};
+    \node [left= of rand1] (rand) {Random Inputs};
+    % Draw edges
+    \path [line] (secret) -- (poly);
+    \path [line] (rand) -| (poly);
+    \path [line] (poly) -| node [midway, above] {$y_1y_2\ldots y_n$} (msg);
+    \path [line] (rand) -| node [midway, below] {$x_1x_2\ldots x_n$} (msg);
+    \path [line] (msg) -- node [midway, above] {\tiny Reed-Solomon Code} (enc);
+    \path [line] (enc) -- (hash);
+    \path [line] (enc) -- (plus);
+    \path [line] (plus) -- (delta);
+    \path [line] (temp) -- (plus);
+\end{tikzpicture}
+\caption{Enrollment phase for a Fuzzy Extractor}
+\label{fig:enroll}
+\end{figure}
+
+The key feature of a fuzzy extractor is the ability to extract the secret $S$ given a noisy, but genuine, template $\tilde{\mathfrak B}$. The extraction process is detailed in Figure~\ref{fig:extract}. First, the query template $\tilde{\mathfrak B}$ is partitioned into $n$ parts $\tilde b_0||\tilde b_1||\ldots||\tilde b_{n-1}$ and each part is added with the corresponding element of $\Delta = \{\delta_0, \delta_1,\ldots,\delta_{n-1}\}$ to get $\tilde C = \{\tilde c_0, \tilde c_1, \ldots, \tilde c_{n-1}\}$. The values of $\tilde C$ should be similar to those of $C$, however they will be different due to varaitions in the noisy template $\mathfrak B$. Note that the values of $C$ are not known, but that hashed values of $C$ are, so the entries of $\tilde C$ are also hashed to obatin $\tilde H = \mathfrak h(\tilde C)$ and compared the entries of $\tilde H$ are compared to those of $H = \mathfrak h(C)$. If at least $d+1$ of the entries in $H$ are equal to the corresponding entries in $\tilde H$ then $\tilde{\mathfrak B}$ is precise enough to be decoded, otherwise the system immediately rejects.
+
+The next step is to obtain the $(x, y)$ pairs using the Reed-Solomon code. Since there were at least $d+1$ matching hashes, at least $d+1$ coordinate pairs will be decoded. The next step is to use Lagrange Interpolation to recover the polynomial $p(x)$. Interpolation of a polynomial of degree $d$ requires at least $d+1$ points, thus it is crucial that at least $d+1$ points are decoded. The parameter $n$ defines the amount of fuzziness that is allowed. Since there are a fixed number of points \textit{needed} to interpolate the polynomial, increasing $n$ decreases the fraction of the partitions of $\mathfrak B$ that must be accurate. Once $p(x)$ is known, it is easy to determine the secret $S$. Each base $b$ digit of $S$ is simply a coefficient of $p(x)$.~\cite{conf/csreaSAM/AlvarezEA09}.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[node distance = .5cm and .75cm]
+    % Place nodes
+    \node (temp) {$\tilde{\mathfrak B}$};
+    \node [decision, right= of temp] (plus) {$+$};
+    \node [above= of plus] (delt) {$\Delta$};
+    \node [below = of plus] (reject) {Reject};
+    \node [decision, right = of plus] (decide) {$\stackrel?=$};
+    \node [above = of decide] (h) {$H$};
+    \node [block, right= 2cm of decide] (dec) {Decode $(x_i,y_i)$};
+    \node [block, right= 1.5cm of dec] (coeff) {$p(x)$};
+    \node [right= of coeff] (s) {$S$};
+    % Draw edges
+    \path [line] (temp) -- (plus);
+    \path [line] (delt) -- (plus);
+    \path [line] (plus) -- node [midway, above] {$\mathfrak h$} (decide);
+    \path [line] (h) -- (decide);
+    \path [line] (decide) -- node [midway, below] {\tiny Reed-Solomon}
+      node [near start, above] {\tiny yes} (dec);
+    \path [line] (decide) |- node [near start, right] {\tiny no} (reject);
+    \path [line] (dec) -- node [midway, above] {\tiny Interpolate} (coeff);
+    \path [line] (coeff) -- (s);
+\end{tikzpicture}
+\caption{Extraction phase for a Fuzzy Extractor}
+\label{fig:extract}
+\end{figure}
+
+It has been shown that the above method of fuzzy extraction has a genuine acceptance rate of 89\% and a false acceptance rate of around 1\% on a iris scan authentication~\cite{conf/csreaSAM/AlvarezEA09}. Of course, a different biometric such as keystroke dynamics would undoubtably have different error rates, prior work shows that this fuzzy extractor has potential to accurately distinguish between people. The genuine acceptant rate of 89\% is fairly good; it implies that the expected number of trials that a person will need to perform in order to authenticate themself is $\frac{100}{89}\approx 1.12$. In the context of the keystroke dynamics protocol, this is convenient enough to satisfy a lazy user. In most instances, the user will only have to type his name once, but occasionally a second trial may be required.
+
+Prior work shows that authentication via keystroke dynamics is feasible~\cite{monrose:authentication}. However, storing information about keystroke timings in a database is dangerous, therefore a zero-knowledge keystroke authentication protocol is very attractive. A protocol already exists to prove knowledge of a secret without giving away any information~\cite{crypto-1986-1125}. This protocol relies on the secret being an exact value, not a noisy sample such as a keystroke timing vector. This problem is solvable using a fuzzy extractor to retreve an exact secret from a noisy input~\cite{conf/csreaSAM/AlvarezEA09}. Composing these ideas, a zero-knowledge keystroke dynamics authentication protocol can be created.
 
 \section{Methodology and Techniques}
 \label{sec:methods}
