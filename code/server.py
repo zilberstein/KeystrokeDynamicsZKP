@@ -7,6 +7,9 @@ from math import sqrt
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.config.from_object('__init__')
 
+G = pow(2,64)
+P = 340282366920938463463374607431768211507
+
 @app.route("/")
 def index():
     return render_template('index.html')
@@ -15,8 +18,6 @@ def index():
 def new_user():
     name = request.form['name']
     my_hash = request.form['hash']
-    print name
-    print my_hash
     r = g.db.execute('''INSERT INTO USERS (name, hash) \
                   VALUES ('%s', '%s')''' % (name, my_hash))
     # not safe at all
@@ -30,7 +31,17 @@ def login():
     if request.method == 'POST':
         r = g.db.execute('SELECT hash FROM USERS WHERE name = \"' + request.form['name'] + '\"')
         #print r.fetchone()
-        if check_match(request.form['hash'], r.fetchone()[0]):
+        '''
+        refer to slides:
+        a = g^r
+        b in Z_r chosen by server
+        c = r+ f(V) + b
+        '''
+        a = request.form['a']
+        b = request.form['b']
+        c = request.form['c']
+        print a
+        if check_match(long(a), long(b), c, r.fetchone()[0]):
             session['logged_in'] = True
             flash('You were logged in')
             return url_for('success')
@@ -38,15 +49,22 @@ def login():
             error = 'Invalid username'
     return url_for('index')
 
-def check_match(guess, ans):
+def converttoString(s):
+    result = '/'
+    for i in s:
+        result += str(i)+'/'
+    return result
+
+# ZK authentication match
+def check_match(a, b, c, ans):
     total = 0
-    s = guess.split('/')[1:-1]
+    s = c.split('/')[1:-1]
     t = ans.split('/')[1:-1]
     for n1, n2 in zip(s,t):
-        total += (float(n1) - float(n2)) ** 2
-    total = sqrt(total / len(s))
+        total += abs(pow(G,long(n1), P) - pow(a*long(n2),b, P))
+    # total = sqrt(total / len(s))
     print total
-    if total < 50:
+    if total > 60:
         return True
     return False
 

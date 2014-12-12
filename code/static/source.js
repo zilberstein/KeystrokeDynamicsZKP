@@ -68,7 +68,7 @@ function get_hs(strokes) {
     for (var i = 0; i < strokes.length; i++) {
         var stroke = Math.round(strokes[i] * DELTA);
         var strokeBI = str2bigInt(stroke.toString(),10);
-        result += bigInt2str(powMod(G, strokeBI, P),10)  + "/"
+        result += bigInt2str(Math.pow(G, strokeBI),10)  + "/"
     }
     return result;
 }
@@ -138,9 +138,9 @@ $('#box').keydown(function(event) {
             url  : baseURL + 'login/',
             data : {
                 'name' : name,
-                'gr'   : bigInt2str( powMod(G, r, P), 10 ),
-                'b'    : bigInt2str(b,10),
-                'hash' : get_zkp(trials[tnum].strokes,r,b)
+                'a' : bigInt2str(powMod(G, r, P), 10),
+                'b' : bigInt2str(b,10),
+                'c' : get_zkp(trials[tnum].strokes,r,b)
             },
             success : function(d){window.location.href = d}
         };
