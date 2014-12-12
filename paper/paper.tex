@@ -113,6 +113,7 @@ Let $c = r + xb$ & $\stackrel{c}{\longrightarrow}$ & $ah^b \stackrel{?}{=} g^c$
 This protocol can certainly be used to authenticate users when the secret $x$ is some fixed value. However, in the case of keystroke dynamics, the secret may have variations. That is, the timings will be slightly different on each trial~\cite{monrose:authentication}. In a regular protocol this is not a problem; with access to the timing data itself, it is easy to calculate the distance between the actual timings and expected ones. With zero knowledge, this is more difficult. Instead of calculating a distance, the random noise in the sample must be removed in order to obtain a unique value.
 
 \subsection{Fuzzy Extractors}
+\label{sec:fuzzy}
 Fuzzy extractors are used to extract a uniformly random string $S$ from a noisy input $\mathfrak{B}$, also known as a biometric template. A similar input $\tilde{\mathfrak{B}}$ will product the exact same string $S$~\cite{conf/csreaSAM/AlvarezEA09}. In the case of keystroke based authentication, $S$ is a user's unique signature which can be extracted from a noisy input. It is then possible to prove knowledge of the secret value $S$ using a zero-knowledge proof.
 
 The enrollment phase for a fuzzy extractor is shown in Figure~\ref{fig:enroll}~\cite{conf/csreaSAM/AlvarezEA09}. Given a biometric template $\mathfrak{B}$ and a secret $S$, the enrollment function produces additional data $H$ and $\Delta$ that are used to recover $S$. The values of $H$ and $\Delta$ can safely be made public without compromising the security of the secret $S$. First, the secret is represented as an integer in base $b$, ie $S = s_0s_1\ldots s_d$. A polynomial $p(x)$ is now derived whose coefficients are the base $b$ digits of $s$:
@@ -189,9 +190,17 @@ Prior work shows that authentication via keystroke dynamics is feasible~\cite{mo
 \section{Methodology and Techniques}
 \label{sec:methods}
 
+We wish to examine the feasibility of keystroke based authentication from both a theoretical and empirical perspective. Two protocols are presented. The first procotol is extrmely insecure, but acts as a proof of concept and comparison baseline in terms of accuracy and security. This protocol has been implemented as a simple web app. The second protocol is a zero-knowledge version of the first one that relies on an extractor to obtain a secret from a noisy input. The secret is never stored or communicated across a network; instead knowledge of the secret is proven using a zero-knowledge protocol. This protocol has been implemented using a rounding extractor and the feasibility of using the fuzzy extractor that is described in Section~\ref{sec:fuzzy} is also examined.
+
+When discussing these protocols, the words \textit{prover} and \textit{client} are used almost interchangeably as are the words \textit{verifier} and \textit{server}. The client is an implementation of a prover and the server is an implementation of a verifier. The client is naturally more `powerful' than the server as the client knows the secret keystroke timings (or can at least extract them from a noisy input). Both the regular and the zero-knowledge versions of the web app have two capabilites: account creation and login. The account creation phase requires a user to type their name in a text box. The keystroke timings are recorded and communicated to the server. The server then stores some data about the keystrokes in a database. When a user tries to log in, he also simply types his name in a text box. The name that he typed is looked up in the database and then his keystroke timings are compared against the ones that are stored. Note that the word \emph{compare} is used loosely here; in the zero-knowledge protocol, no direct comparison occurs per se. The user experience is identicalin the regular and zero-knowledge versions, although the implementation is quite different.
+
+Performance of these systems will be analysed using two metrics: how easy it is for a person to repeatedly log in and how easy it is for an adversary to impersonate a user. As stated in Section~\ref{sec:bg-keystroke}, this adversary may not be an actual person; it may be a bot that is programmed to reproduce an exact sequence of keystrokes. This means that is the actual timing vector is compromised, then the protocol is totally insecure.
+
 \section{Results}
 \label{sec:results}
 \subsection{The Basic Protocol}
+
+The basic protocol authenticates users by directly comparing the given keystroke vector to the expected keystroke vector. This protocol is not designed with security in mind; any adversary that can see the information exchange between the prover and the verifier will be able to directly discern the keystroke vectors. This protocol is not meant to be used in a real implementation of the system, but instead it is meant to be a point of comparison for the zero knowledge version.
 
 \begin{figure}[h!]
 \centering
@@ -204,6 +213,17 @@ User types name ($A$) in web client. Keystroke vector ($V$) is recorded &$\xrigh
 \label{fig:basic_new}
 \end{figure}
 
+We will let $V=v_1v_2\ldots v_n$ be the real keystroke vector for user $A$ and $\tilde V = \tilde v_1\tilde v_2\ldots\tilde v_n$ be the keystroke vector associated with a login attempt by someone claiming to be $A$. Account creation in the basic protocol is very simple. First, the prover sends a pair $(A,V)$ containing the user's name and keystroke timings to the verifier. The verifier then stores this information in its knowledge bank. This protocol is outlined in Figure~\ref{fig:basic_new}. Authentication (as seen in Figure~\ref{fig:basic_auth}) is then performed by applying a comparison function $c$ to the expected keystroke vector for user $A$ and the login vector. The comparison function is defined as follows:
+$$\begin{array}{ccc}
+c(V,\tilde V) = \begin{cases}
+  1, & d(V, \tilde V) \le \varepsilon \\
+  0, & \text{otherwise}
+\end{cases}
+& \;\;\;\;\; &
+d(V,\tilde V) = \sqrt{\frac1n\sum_{i=1}^n(v_i - \tilde v_i)^2}
+\end{array}$$
+Above, $\varepsilon$ is a constant error tolerance which is carefully chosen considering the tradeoffs between security and ease of login. This tradeoff will be examined closely in section~\ref{sec:chall}.
+
 \begin{figure}[h!]
 \centering
 \fbox{
@@ -215,18 +235,7 @@ Report result&$\xleftarrow{f(V, \tilde V)}$ & Send decision
 \caption{Authentication in the basic protocol}
 \label{fig:basic_auth}
 \end{figure}
-The basic protocol authenticates users by directly comparing the given keystroke vector to the expected keystroke vector. This protocol is not designed with security in mind; any adversary that can see the information exchange between the prover and the verifier will be able to directly discern the keystroke vectors. This protocol is not meant to be used in a real implementation of the system, but instead it is meant to be a point of comparison for the zero knowledge version.
 
-We will let $V=v_1v_2\ldots v_n$ be the real keystroke vector for user $A$ and $\tilde V = \tilde v_1\tilde v_2\ldots\tilde v_n$ be the keystroke vector associated with a login attempt by someone claiming to be $A$. Account creation in the basic protocol is very simple. First, the prover sends a pair $(A,V)$ containing the user's name and keystroke timings to the verifier. The verifier then stores this information in its knowledge bank. This protocol is outlined in Figure~\ref{fig:basic_new}. Authentication (as seen in Figure~\ref{fig:basic_auth}) is then performed by applying a comparison function $c$ to the expected keystroke vector for user $A$ and the login vector. The comparison function is defined as follows:
-$$\begin{array}{ccc}
-c(V,\tilde V) = \begin{cases}
-  1, & d(V, \tilde V) \le \varepsilon \\
-  0, & \text{otherwise}
-\end{cases}
-& \;\;\;\;\; &
-d(V,\tilde V) = \sqrt{\frac1n\sum_{i=1}^n(v_i - \tilde v_i)^2}
-\end{array}$$
-Above, $\varepsilon$ is a constant error tolerance which is carefully chosen considering the tradeoffs between security and ease of login. This tradeoff will be examined closely in section~\ref{sec:chall}.
 
 Disregarding the fact that the keystroke vector $V$ is immediately discernable from eavesdropping on the account creation process, this protocol will be the baseline for evaluating the performance of the zero-knowledge version.
 
