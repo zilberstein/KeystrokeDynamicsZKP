@@ -5,8 +5,9 @@ var same = 0;
 var fast = 1;
 var ffast = 2;
 
-var P = str2bigInt("340282366920938463463374607431768211507",10);
-var G = str2bigInt("18446744073709617151",10);
+var P = str2bigInt("340282366920938463463374607431768211507", 10);
+//var G = str2bigInt("18446744073709617151",10);
+var G = 16;
 var DELTA = 0.05;
 
 function init_data() {
@@ -67,8 +68,9 @@ function get_hs(strokes) {
     var result = "/";
     for (var i = 0; i < strokes.length; i++) {
         var stroke = Math.round(strokes[i] * DELTA);
-        var strokeBI = str2bigInt(stroke.toString(),10);
-        result += bigInt2str(Math.pow(G, strokeBI),10)  + "/"
+        //var strokeBI = str2bigInt(stroke.toString(),10);
+        //result += bigInt2str(Math.pow(G, strokeBI),10)  + "/";
+        result += Math.pow(G, stroke).toString()  + "/";
     }
     return result;
 }
@@ -111,16 +113,19 @@ function bigRandom(bits) {
         var r = Math.ceil(a * Math.random());
         result += r.toString();
     }
-    return str2bigInt(result,10);
+    //return str2bigInt(result,10);
+    return result.toString()
 }
 
 function get_zkp(strokes, r, b) {
     var result = "/";
     for (var i = 0; i < strokes.length; i++) {
-        var stroke = Math.round(strokes[i]);
-        var strokeBI = str2bigInt(stroke.toString(),10);
-        var val = add(r, mult(strokeBI, b));
-        result += bigInt2str(val,10) + '/';
+        var stroke = Math.round(strokes[i] * DELTA);
+        //var strokeBI = str2bigInt(stroke.toString(),10);
+        //var val = add(r, mult(strokeBI, b));
+        var val = r + stroke * b;
+        //result += bigInt2str(val,10) + '/';
+        result += val.toString()+'/';
     }
     return result;
 }
@@ -131,15 +136,18 @@ $('#box').keydown(function(event) {
     name = $('#box').val();
     if (event.which == 13) {
         name = $('#box').val();
-        var r = bigRandom(128);
-        var b = bigRandom(128);
+        //var r = bigRandom(128);
+        //var b = bigRandom(128);
+        var r = 4;
+        var b = 10;
         var req = {
             type : "POST",
             url  : baseURL + 'login/',
             data : {
                 'name' : name,
-                'a' : bigInt2str(powMod(G, r, P), 10),
-                'b' : bigInt2str(b,10),
+                //'a' : bigInt2str(Math.pow(G, r), 10),
+                'a' : Math.pow(G, r).toString(),
+                'b' : b.toString(),
                 'c' : get_zkp(trials[tnum].strokes,r,b)
             },
             success : function(d){window.location.href = d}

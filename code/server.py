@@ -2,12 +2,13 @@ import sqlite3
 from flask import Flask, render_template, request, g, redirect, url_for, \
              abort, flash, session
 from contextlib import closing
-from math import sqrt
+from math import sqrt, frexp
+from decimal import Decimal
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.config.from_object('__init__')
 
-G = pow(2,64)
+G = 16
 P = 340282366920938463463374607431768211507
 
 @app.route("/")
@@ -40,8 +41,8 @@ def login():
         a = request.form['a']
         b = request.form['b']
         c = request.form['c']
-        print a
-        if check_match(long(a), long(b), c, r.fetchone()[0]):
+        print 'c=%s' %c
+        if check_match(Decimal(a), Decimal(b), c, r.fetchone()[0]):
             session['logged_in'] = True
             flash('You were logged in')
             return url_for('success')
@@ -61,10 +62,14 @@ def check_match(a, b, c, ans):
     s = c.split('/')[1:-1]
     t = ans.split('/')[1:-1]
     for n1, n2 in zip(s,t):
-        total += abs(pow(G,long(n1), P) - pow(a*long(n2),b, P))
+        print pow(G,Decimal(n1))
+        print a*pow(Decimal(n2),b)
+        total = abs(pow(G,Decimal(n1)) - a*pow(Decimal(n2),b))
     # total = sqrt(total / len(s))
-    print total
-    if total > 60:
+    m,e = frexp(total)
+    print "e"
+    print e
+    if e < 380:
         return True
     return False
 
