@@ -67,8 +67,10 @@ def check_match(a, b, c, l, ans):
         total = abs(pow(G,Decimal(n1)) - a*pow(Decimal(n2),b))
     # total = sqrt(total / len(s))
     m,e = frexp(total)
+    with open('trials', 'a') as f:
+        f.write(str(l)+'\t'+str(e/l)+'\n')
     print e/l
-    if e/l < 50:
+    if e != 0 and e/l < 40:
         return True
     return False
 
