@@ -226,7 +226,7 @@ Above, $\epsilon$ is a constant error tolerance which is carefully chosen consid
 \begin{tabular}{m{2.5in}m{.5in}m{2.5in}}
 \textbf{Prover} && \textbf{Verifier}\\
 User types name ($A$) in web client. Keystroke vector ($\tilde V$) is recorded &$\xrightarrow{(A, \tilde V)}$ & Lookup key $A$ in the database to get $V$\\
-Report result&$\xleftarrow{f(V, \tilde V)}$ & Send decision
+Report result&$\xleftarrow{c(V, \tilde V)}$ & Send decision
 \end{tabular}}
 \caption{Authentication in the basic protocol}
 \label{fig:basic_auth}
@@ -244,7 +244,7 @@ The zero knowledge builds on top of the basic protocol with the added constraint
 \begin{tabular}{m{2.5in}m{.5in}m{2.5in}}
 \textbf{Prover} && \textbf{Verifier}\\
 Choose some generator $g$ & $\xrightarrow{g}$ & Remember $g$\\
-User types name ($A$) in web client. Keystroke vector ($V$) is recorded. Let $h = g^{f(V)}$ &$\xrightarrow{h}$ & $(A,g,h)$ is stored in the database
+User types name ($A$) in web client. Keystroke vector ($V$) is recorded. Let $h = g^{f(V)}$, where $f(V)$ is the fuzzy extraction of $V$.   & $\xrightarrow{h}$ & $(A,g,h)$ is stored in the database
 \end{tabular}}
 \caption{Account creation in the zero-knowledge protocol}
 \label{fig:zk_new}
@@ -265,7 +265,7 @@ Report decision & $\stackrel{ah^b \stackrel{?}{=} g^c}\longleftarrow$ &
 \caption{Authentication in the zero-knowledge protocol}
 \label{fig:zk_auth}
 \end{figure}
-
+\newpage
 \section{Results}
 \label{sec:results}
 We evaluate performance based on two main metrics: precision (how easily a person can repeat their own typing pattern), and protection (how easily an imposter can forget the typing pattern). As stated in Section~\ref{sec:bg-keystroke}, this adversary may not be an actual person; it may be a bot that is programmed to elicit the keystroke timing.  We test the performance of our application with four participants, all with varying typing speeds, preferred hand layouts, and dominant hands.  We measured $\epsilon^{'}$ which is the weighted difference in average typing speed the target user was typing at, compared to our threshold level of $\epsilon=40$. We then measured how consistently the target user could replicate that result, and measured that as a percentage. We then allowed the three other participants to attempt to forge the typing signature, having not seen the target user's test trials.
