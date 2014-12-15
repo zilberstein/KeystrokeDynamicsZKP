@@ -50,9 +50,9 @@ University of Pennsylvania
 \maketitle
 
 \begin{abstract}
-  We present a protocol to authenticate users without the use of a password. Passwords have many inherent problems. Several well known companies such as Dropbox and Apple have recently been targets of large scale security breaches in which passwords were compromised. Because of this risk, users are urged to use different passwords for each account. It is very difficult to create and remember enough secure passwords considering how many online accounts most people have today.
+  We present a zero-knowledge protocol to authenticate users without the use of a password. Passwords have many inherent problems; several well known companies such as Dropbox and Apple have recently been targets of large scale security breaches in which passwords were compromised. Because of this risk, users are urged to use different passwords for each account. However, it is very inconvenient to create and remember enough secure passwords considering how many online accounts most people have today.
 
-Many common websites such as Facebook and Dropbox are already encouraging the use two-factor authentication to subvert these issues. These forms of authentication usually involve confirming the possession of a piece of hardware. Instead, we suggest an alternate authentication factor that does not require possession of additional hardware. This authentication scheme is based on keystroke dynamics; the user is authenticated based on the timing of his/her keystrokes when typing a particular phrase (such as their name). When typing, each individual has their own typing pattern consisting of lag and dwell time (how long a key is pressed) and rhythms (typing certain clusters of letters faster).  This typing pattern translates into a typing signature which can be measured and used as a form of biometric data.
+Many common websites such as Facebook and Dropbox are already encouraging the use two-factor authentication to subvert these issues. These forms of authentication usually involve confirming the possession of a piece of hardware. Instead, we suggest an alternate authentication factor that does not require possession of additional hardware. Our authentication scheme is based on keystroke dynamics; the user is authenticated based on the unique timing of his/her keystrokes when typing a particular phrase (such as their name). When typing, each individual has their own typing pattern consisting of lag and dwell time (how long a key is pressed) and rhythms (typing certain clusters of letters faster).  This typing pattern translates into a typing signature which can be measured and used as a form of biometric data. Instead of sending this naked data through vulnerable communication channels, we design a zero-knowledge protocol where the server verify the identity of a user without ever having to exchange the biometric data itself. In this way, if there were ever a breach of security, such as the case with Target or J.P. Morgan Chase, no useful information is leaked.
 \end{abstract}
 
 \section{Introduction}
@@ -192,7 +192,7 @@ Prior work shows that authentication via keystroke dynamics is feasible~\cite{mo
 
 We wish to examine the feasibility of keystroke based authentication from both a theoretical and empirical perspective. Two protocols are presented. The first procotol is extremely insecure, but acts as a proof of concept and comparison baseline in terms of accuracy and security. This protocol has been implemented as a simple web app. The second protocol is a zero-knowledge version of the first one that relies on an extractor to obtain a secret from a noisy input. The secret is never stored or communicated across a network; instead knowledge of the secret is proven using a zero-knowledge protocol. This protocol has been implemented using a rounding extractor and the feasibility of using the fuzzy extractor that is described in Section~\ref{sec:fuzzy} is also examined.
 
-When discussing these protocols, the words \textit{prover} and \textit{client} are used almost interchangeably as are the words \textit{verifier} and \textit{server}. The client is an implementation of a prover and the server is an implementation of a verifier. The client is naturally more `powerful' than the server as the client knows the secret keystroke timings (or can at least extract them from a noisy input). Both the regular and the zero-knowledge versions of the web app have two capabilites: account creation and login. The account creation phase requires a user to type their name in a text box. The keystroke timings are recorded and communicated to the server. The server then stores some data about the keystrokes in a database. When a user tries to log in, he also simply types his name in a text box. The name that he typed is looked up in the database and then his keystroke timings are compared against the ones that are stored. Note that the word \emph{compare} is used loosely here; in the zero-knowledge protocol, no direct comparison occurs per se. The user experience is identical in the regular and zero-knowledge versions, although the implementation is quite different.
+When discussing these protocols, the words \textit{prover} and \textit{client} are used almost interchangeably as are the words \textit{verifier} and \textit{server}. The client is an implementation of a prover and the server is an implementation of a verifier. The client is naturally more `powerful' than the server as the client knows the secret keystroke timings (or can at least extract them from a noisy input). Both the regular and the zero-knowledge versions of the web app have two capabilites: account creation and login. The account creation phase requires a user to type their name in a text box. The keystroke timings are recorded and communicated to the server. The server then stores some data about the keystrokes in a database. When a user tries to log in, he also simply types his name in a text box. The name that he typed is looked up in the database and then his keystroke timings are compared against the ones that are stored. Note that the word \emph{compare} is used loosely here; in the zero-knowledge protocol, no direct comparison occurs per se.  Instead we measure the difference between the two signautres, allowing some error tolerance.   The user experience is identical in the regular and zero-knowledge versions, although the implementation is quite different.
 
 \subsection{The Basic Protocol}
 
@@ -272,9 +272,35 @@ Report decision & $\stackrel{ah^b \stackrel{?}{=} g^c}\longleftarrow$ &
 \label{sec:results}
 Performance of these systems will be analysed using two metrics: how easy it is for a person to repeatedly log in and how easy it is for an adversary to impersonate a user. As stated in Section~\ref{sec:bg-keystroke}, this adversary may not be an actual person; it may be a bot that is programmed to reproduce an exact sequence of keystrokes. This means that is the actual timing vector is compromised, then the protocol is totally insecure.
 
+\begin{table}[h!]
+\centering
+\begin{tabular}{||c c c c||} 
+ \hline
+ Length of Name & $\epsilon^{'}$ & Success by User (\%) & Success by Imposter (\%) \\ [0.5ex] 
+ \hline\hline
+ 3 & 112 & 4 & 0 \\ 
+ 5 & 59 & 10 & 5 \\
+ 8 & 47 & 85 & 23 \\ 
+ 11 & 34 & 87 & 47 \\
+ 13 & 32 & 87 & 43 \\ [1ex] 
+ \hline
+\end{tabular}
+\caption{Keystroke variation by length of name.}
+\label{table:1}
+\end{table}
+
+Table \ref{table:1} documents repeated test trials from a small user sample.  Trials were conducted between 20 and 40 times with varying word lengths.  We can see the trend of successful authentications with increasing word length.  This is most likely attributed to the fact that typing patterns are more apparent with longer pieces of text.  However, with shorter words, our implementation is very unforgiving, since there are fewer keystrokes to average out the mistakes, so timing is extremely sensitive.   As the words become longer, there is more tolerance for fluctuations.
+
 
 \section{Future Work}
 \label{sec:future}
+It is evident that the implementation, though viable as a proof of concept, is nowhere near robust enough to be used in practice.  Currently, for longer names, the prototype has bounded probability of success; it correctly verifies the correct user a significant portion of time (barring human induced errors such as typing anomalies), but also verifies an imposter over $40\%$ of the time.  This can be amended by adjusting $\delta$, the fault tolerance per keystroke.  The idea is to find the optimal value of $\delta$ and $\epsilon$ such that the real users can be validated but an imposted can not.  We also would need to adjust our algorithm for those with shorter names.  As can be seen in the previous section, it is extremely difficult for a three letter name to produce a match regardless of the user.  In practice, however, this is less of a concern, since virtually no one has a combined forename and surname of less than three characters. Moving forward, we would need to account for these edge cases, and perhaps impose a character minimum, similar to passwords today.
+
+It is also important to note that this protocol is very keyboard dependent. This means that this method of verification would be impossible on say mobile devices, since people generally use their thumbs to type on smaller keyboards.  Also, a signature on a QWERTY keyboard would be significantly different than one on a French AZERTY keyboard or a Dvorak. In practice, this is less of a concern, since most people form typing habits on one particular keyboard layout, and the variety of keyboard layouts only provide an extra layer of security.
+
+We would also need to test the protocol on many more words of varying lexicographical distances. Our demonstration used only five words, which is subject to extreme bias, since characters in the words chosen may have been clustered in a way that changed the difficulty of typing that one particular word.  The currently observed trends may differ when a larger sample size of words and participants is used.
+
+Though the implementation is not yet consistent, it provides a solid proof of concept for the potential of keystroke authentication.  As we improve the algorithm to weigh more characteristics of a person's typing pattern (such as measuring the actuation force, duration), secure authentication for both parties will be possible. Because of the nature of our zero-knowledge scheme, the users also do not have to worry about any security breaches in the communication channels or in the database. Just like a written signature, the typing signature will be unique and secure.
 
 \bibliographystyle{plain}
 
