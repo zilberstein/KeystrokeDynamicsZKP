@@ -265,7 +265,10 @@ Report decision & $\stackrel{ah^b \stackrel{?}{=} g^c}\longleftarrow$ &
 \caption{Authentication in the zero-knowledge protocol}
 \label{fig:zk_auth}
 \end{figure}
+
 \newpage
+In our implementation, we modified the fuzzy extraction principle in order to hash each keystroke in a locally sensitive way. This is because we want to ignore small fluctuations and noises in between strokes.  Our implementation involves picking a error tolerance parameter $\delta$ such that similar keystroke timings will be viewed indiscriminately to the hashing algorithm.  Adjusting $\delta$ allows us to control how much error we want to allow per keystroke. After a series of algebraic calculations, we compare the exponentiated extracted hashed values to the exponentiated extracted hash values stored in the server.
+
 \section{Results}
 \label{sec:results}
 We evaluate performance based on two main metrics: precision (how easily a person can repeat their own typing pattern), and protection (how easily an imposter can forget the typing pattern). As stated in Section~\ref{sec:bg-keystroke}, this adversary may not be an actual person; it may be a bot that is programmed to elicit the keystroke timing.  We test the performance of our application with four participants, all with varying typing speeds, preferred hand layouts, and dominant hands.  We measured $\epsilon^{'}$ which is the weighted difference in average typing speed the target user was typing at, compared to our threshold level of $\epsilon=40$. We then measured how consistently the target user could replicate that result, and measured that as a percentage. We then allowed the three other participants to attempt to forge the typing signature, having not seen the target user's test trials.
