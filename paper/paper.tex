@@ -60,9 +60,9 @@ Using passwords for authentication is an ancient concept that continues to be th
 
 Several fixes to this problem are already in place and work by augmenting the password with a secondary authentication factor. Websites that suport two factor authentication include Amazon, Facebook, Google, Dropbox, and many others~\cite{2fac}. In each case, the first factor is a password and the second factor is some kind of trusted hardware (personal computer, smartphone, etc). When a user tries to log in from an untrusted machine, he must confirm his identity by typing a code that is sent to a trusted source such as an SMS, email, or phone call. While this process greatly improves the security of a poorly chosen password, it is still a hastle for the lazy user. It also fails if the user does not have access to a trusted piece of hardware. The solution presented in this paper uses trusted hardware that the user has at all times: his hands.
 
-We propose an authentication protocol based on keystroke dynamics; the unique timings associated with the way that a user types. The protocol we present uses keystroke dynamics as the sole authentication factor, however this protocol could easily be extended to incorporate more factors. As stated before, keystroke dynamics act as a hardware factor without requiring users to carry any piece of physical hardware with them other than their hands. Login on an untrusted machine is therefore equally as secure as login from a trusted one, but it also requires no extra steps on behalf of the user.
+We propose an authentication protocol based on keystroke dynamics, the unique timings associated with the way that a user types.  Because each individual prefers their own hand layout on the keyboard, their finger movements will be correspondingly different.  For example, if Albert keeps his left pinky on the \textit{shift} key in rest position, then the \textit{a} key will be covered by his ring finger and his index finger will be split between \textit{d} and \textit{f}.  This will affect his typing speed of certain words, as opposed to Bob who uses his left pinky for the \textit{a} key so has both index and middle fingers available for \textit{d} and \textit{f}.  In this paper, we exploit this fact and use it as the authentication factor, however this protocol could easily be extended to incorporate more factors. As stated before, keystroke dynamics act as a hardware factor without requiring users to carry any piece of physical hardware with them other than their hands. Login on an untrusted machine is therefore equally as secure as login from a trusted one, but it also requires no extra steps on behalf of the user.
 
-A problem arrises with this protocol in the case that the database containing users' keystroke data is compromised. In a password model, if a user's password is leaked, then he can simply create a new one. However, in an authentication scheme based on keystroke dynamics, if an adversary gains knowledge of keystroke data, then the affected users can never confidently use keystroke dynamics to authenticate themselves again. In order to fix this, as little data as possible should be stored in the database. In fact, the protocol we present is zero-knowledge. This means that a user will never at any point in the enrollment or authentication process jeopardize the secrecy of his keystroke timings.
+A problem arises with this protocol in the case that the database containing users' keystroke data is compromised. In a password model, if a user's password is leaked, then he can simply create a new one. However, in an authentication scheme based on keystroke dynamics, if an adversary gains knowledge of keystroke data, then the affected users can never confidently use keystroke dynamics to authenticate themselves again. In order to fix this, as little data as possible should be stored in the database. In fact, the protocol we present is zero-knowledge. This means that a user will never at any point in the enrollment or authentication process jeopardize the secrecy of his keystroke timings.
 
 In Section~\ref{sec:related}, an overview of prior and similar work is provided. Next, a summary of the methodology and techniques that are used is explained in Section~\ref{sec:methods}. The protocol itself is defined in Section~\ref{sec:results}; first, a standard (but insecure) protocol is defined as a point of comparison and then the several improvements are made to arrive at the zero-knowledge version. The tradeoffs and challenges of zero-knowledge keystroke authentication are also examined in this section. Finally, future work is discussed in Section~\ref{sec:future}.
 
@@ -212,13 +212,13 @@ User types name ($A$) in web client. Keystroke vector ($V$) is recorded &$\xrigh
 Let $V=v_1v_2\ldots v_n$ be the real keystroke vector for user $A$ and $\tilde V = \tilde v_1\tilde v_2\ldots\tilde v_n$ be the keystroke vector associated with a login attempt by someone claiming to be $A$. Account creation in the basic protocol is very simple. First, the prover sends a pair $(A,V)$ containing the user's name and keystroke timings to the verifier. The verifier then stores this information in its knowledge bank. This protocol is outlined in Figure~\ref{fig:basic_new}. Authentication (as seen in Figure~\ref{fig:basic_auth}) is then performed by applying a comparison function $c$ to the expected keystroke vector for user $A$ and the login vector. The comparison function that is used in the actual implementation is defined as follows:
 $$\begin{array}{ccc}
 c(V,\tilde V) = \begin{cases}
-  1, & d(V, \tilde V) \le \varepsilon \\
+  1, & d(V, \tilde V) \le \epsilon \\
   0, & \text{otherwise}
 \end{cases}
 & \;\;\;\;\; &
 d(V,\tilde V) = \sqrt{\frac1n\sum_{i=1}^n(v_i - \tilde v_i)^2}
 \end{array}$$
-Above, $\varepsilon$ is a constant error tolerance which is carefully chosen considering the tradeoffs between security and ease of login. This tradeoff will be examined closely in section~\ref{sec:results}.
+Above, $\epsilon$ is a constant error tolerance which is carefully chosen considering the tradeoffs between security and ease of login. This tradeoff will be examined closely in section~\ref{sec:results}.
 
 \begin{figure}[h!]
 \centering
@@ -237,7 +237,6 @@ Disregarding the fact that the keystroke vector $V$ is immediately discernable f
 
 \subsection{The Zero-Knowledge Protocol}
 The zero knowledge builds on top of the basic protocol with the added constraint that no meaningful information about the keystroke vector is ever transferred accross the network. This also means that the representation of the keystroke vector that is stored in the database does not leak any information about the keystroke vector itself. If the database were completely compromised, there would thus be no breach in security; the information in the database can be used to verify a user's identity and nothing more.
-
 
 \begin{figure}
 \centering
@@ -267,10 +266,9 @@ Report decision & $\stackrel{ah^b \stackrel{?}{=} g^c}\longleftarrow$ &
 \label{fig:zk_auth}
 \end{figure}
 
-
 \section{Results}
 \label{sec:results}
-Performance of these systems will be analysed using two metrics: how easy it is for a person to repeatedly log in and how easy it is for an adversary to impersonate a user. As stated in Section~\ref{sec:bg-keystroke}, this adversary may not be an actual person; it may be a bot that is programmed to reproduce an exact sequence of keystrokes. This means that is the actual timing vector is compromised, then the protocol is totally insecure.
+We evaluate performance based on two main metrics: precision (how easily a person can repeat their own typing pattern), and protection (how easily an imposter can forget the typing pattern). As stated in Section~\ref{sec:bg-keystroke}, this adversary may not be an actual person; it may be a bot that is programmed to elicit the keystroke timing.  We test the performance of our application with four participants, all with varying typing speeds, preferred hand layouts, and dominant hands.  We measured $\epsilon^{'}$ which is the weighted difference in average typing speed the target user was typing at, compared to our threshold level of $\epsilon=40$. We then measured how consistently the target user could replicate that result, and measured that as a percentage. We then allowed the three other participants to attempt to forge the typing signature, having not seen the target user's test trials.
 
 \begin{table}[h!]
 \centering
@@ -281,20 +279,25 @@ Performance of these systems will be analysed using two metrics: how easy it is 
  3 & 112 & 4 & 0 \\ 
  5 & 59 & 10 & 5 \\
  8 & 47 & 85 & 23 \\ 
- 11 & 34 & 87 & 47 \\
- 13 & 32 & 87 & 43 \\ [1ex] 
+ 11 & 34 & 87 & 43 \\
+ 13 & 32 & 87 & 35 \\ [1ex] 
  \hline
 \end{tabular}
 \caption{Keystroke variation by length of name.}
 \label{table:1}
 \end{table}
 
-Table \ref{table:1} documents repeated test trials from a small user sample.  Trials were conducted between 20 and 40 times with varying word lengths.  We can see the trend of successful authentications with increasing word length.  This is most likely attributed to the fact that typing patterns are more apparent with longer pieces of text.  However, with shorter words, our implementation is very unforgiving, since there are fewer keystrokes to average out the mistakes, so timing is extremely sensitive.   As the words become longer, there is more tolerance for fluctuations.
+Table \ref{table:1} documents repeated test trials with $\delta=0.05$.  Trials were conducted between 20 and 40 times with varying word lengths.  We can see the trend of successful authentications with increasing word length.  This is most likely attributed to the fact that typing patterns are more distinct with longer pieces of text.  On the flip side, imposters are also more likely to successfully impersonate the target user with a longer text, since our algorithm does not differentiate where the difference in time accumulated; in other words, if an imposter's speed did not match in the beginning, (s)he can make up for it by matching in the end.  The error would be spread across the length of the text and therefore validate an imposter.
 
+However, with shorter words, our implementation is very unforgiving.  Since there are fewer keystrokes to average out the mistakes, timing is extremely sensitive.  In practice, however, this is less of a concern, since virtually no one has a combined forename and surname of less than three characters.   As the words become longer, there is more tolerance for fluctuations.
+
+There exists a non-insignificant difference between the success rates of target users and their impersonators.  This affirms the fact that keystroke dynamics are variable enough and have sufficient entropy to be used as authentication tools.  Barring anomalies with short phrases, the difference in patterns become apparent, and also the increase between a phrase of 11 characters and one of 13. 
+
+Besides the sampling bias inherent in a small sample size, the frequency in which the trials were conducted would also be different in practice. Trials were conducted consecutively, with participants intent on replicating their own keystrokes or mimicking others.  Therefore, the results may be partially due to muscle memory, instead of the unique typing signature under any conditions.  The strong performance of adversaries indicates that the parameters should be adjusted to to be more exclusive, especially with longer user names.
 
 \section{Future Work}
 \label{sec:future}
-It is evident that the implementation, though viable as a proof of concept, is nowhere near robust enough to be used in practice.  Currently, for longer names, the prototype has bounded probability of success; it correctly verifies the correct user a significant portion of time (barring human induced errors such as typing anomalies), but also verifies an imposter over $40\%$ of the time.  This can be amended by adjusting $\delta$, the fault tolerance per keystroke.  The idea is to find the optimal value of $\delta$ and $\epsilon$ such that the real users can be validated but an imposted can not.  We also would need to adjust our algorithm for those with shorter names.  As can be seen in the previous section, it is extremely difficult for a three letter name to produce a match regardless of the user.  In practice, however, this is less of a concern, since virtually no one has a combined forename and surname of less than three characters. Moving forward, we would need to account for these edge cases, and perhaps impose a character minimum, similar to passwords today.
+It is evident that the implementation, though viable as a proof of concept, is nowhere near robust enough to be used in practice.  Currently, for longer names, the prototype has bounded probability of success; it correctly verifies the correct user a significant portion of time (barring human induced errors such as typing anomalies), but also verifies an imposter over $40\%$ of the time.  This can be amended by adjusting $\delta$, the fault tolerance per keystroke.  The idea is to find the optimal value of $\delta$ and $\epsilon$ such that the real users can be validated but an imposted can not.  We also would need to adjust our algorithm for those with shorter names.  As can be seen in the previous section, it is extremely difficult for a three letter name to produce a match regardless of the user.  Moving forward, we would need to account for these edge cases, and perhaps impose a character minimum, similar to passwords today.
 
 It is also important to note that this protocol is very keyboard dependent. This means that this method of verification would be impossible on say mobile devices, since people generally use their thumbs to type on smaller keyboards.  Also, a signature on a QWERTY keyboard would be significantly different than one on a French AZERTY keyboard or a Dvorak. In practice, this is less of a concern, since most people form typing habits on one particular keyboard layout, and the variety of keyboard layouts only provide an extra layer of security.
 
