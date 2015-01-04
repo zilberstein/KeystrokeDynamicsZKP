@@ -5,4 +5,4 @@ all:
 	xelatex paper.tex
 
 clean:
-	rm *.aux *.log *.pdf
+	rm *.aux *.log *.pdf *.bbl *.blg
