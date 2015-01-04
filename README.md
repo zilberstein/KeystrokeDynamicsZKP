@@ -1,13 +1,8 @@
-Using keystroke dynamics as biometric authentication, using fuzze extraction to generate keys, then using Zero-Knowledge Proofs to authenticate password.
+===
+A Zero-Knowledge Protocol for Keystroke Authentication
+===
 
-====
-TODO
-====
+Prototype of zero-knowledge authentication by keystroke dynamics, implemented in Python.  See `pres/pres.tex`.
 
-Keystroke Validation \\
-Figure out protocol \\
-Hash timings to keys (http://www.cs.bu.edu/~reyzin/fuzzy.html)\\
-Web Server\\
-ZKP protocol
-
-
+To Create account, type in name.
+To Login: Type in name.
